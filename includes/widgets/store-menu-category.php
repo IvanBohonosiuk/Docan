@@ -16,7 +16,7 @@ class Dokan_Store_Category_Walker extends Dokan_Category_Walker {
         $url = $this->store_url . 'section/' . $category->term_id;
 
         if ( $depth == 1 ) {
-            $output .= $indent . '<div class="sub-block">' . "\n\t" .'<h3><a href="' . $url . '">' . $category->name . '</a></h3>' . "\n";
+            $output .= $indent . '<div class="sub-block">' . "\n\t" .'<a href="' . $url . '">' . $category->name . '</a>' . "\n";
         } else {
             $caret = $args['has_children'] ? ' <span class="caret"></span>' : '';
             $class_name = $args['has_children'] ? ' class="has-children"' : '';

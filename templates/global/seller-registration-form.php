@@ -22,10 +22,10 @@
         </p>
     </div>
 
-    <p class="form-row form-group form-row-wide">
+    <!-- <p class="form-row form-group form-row-wide">
         <label for="company-name"><?php _e( 'Shop Name', 'dokan' ); ?> <span class="required">*</span></label>
         <input type="text" class="input-text form-control" name="shopname" id="company-name" value="<?php if ( ! empty( $postdata['shopname'] ) ) echo esc_attr($postdata['shopname']); ?>" required="required" />
-    </p>
+    </p> -->
 
     <p class="form-row form-group form-row-wide">
         <label for="seller-url" class="pull-left"><?php _e( 'Shop URL', 'dokan' ); ?> <span class="required">*</span></label>
@@ -35,7 +35,7 @@
     </p>
 
     <p class="form-row form-group form-row-wide">
-        <label for="shop-phone"><?php _e( 'Phone Number', 'dokan' ); ?><span class="required">*</span></label>
+        <label for="shop-phone"><?php _e( 'Phone Number', 'dokan' ); ?> <span class="required">*</span></label>
         <input type="text" class="input-text form-control" name="phone" id="shop-phone" value="<?php if ( ! empty( $postdata['phone'] ) ) echo esc_attr($postdata['phone']); ?>" required="required" />
     </p>
     <?php 

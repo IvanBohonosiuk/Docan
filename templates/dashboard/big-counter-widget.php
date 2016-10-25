@@ -21,7 +21,7 @@
             <div class="title"><?php _e( 'Order', 'dokan' ); ?></div>
             <div class="count">
                 <?php
-                $total = $orders_count->{'wc-completed'} + $orders_count->{'wc-processing'} + $orders_count->{'wc-on-hold'};
+                $total = $orders_count->{'wc-completed'} + $orders_count->{'wc-processing'} + $orders_count->{'wc-on-hold'} + $orders_count->{'wc-v-doroge'};
                 echo number_format_i18n( $total, 0 );
                 ?>
             </div>

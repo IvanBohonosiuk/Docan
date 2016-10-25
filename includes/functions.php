@@ -262,7 +262,7 @@ function dokan_author_total_sales( $seller_id ) {
 
         $sql = "SELECT SUM(order_total) as earnings
             FROM {$wpdb->prefix}dokan_orders as do LEFT JOIN {$wpdb->prefix}posts as p ON do.order_id = p.ID
-            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold')";
+            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-v-doroge')";
 
         $count = $wpdb->get_row( $wpdb->prepare( $sql, $seller_id ) );
         $earnings = $count->earnings;
@@ -383,7 +383,7 @@ function dokan_get_client_ip() {
     else if ( getenv( 'HTTP_FORWARDED_FOR' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
     else if ( getenv( 'HTTP_X_CLUSTER_CLIENT_IP' ) )
-        $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
+        $ipaddress = getenv( 'HTTP_X_CLUSTER_CLIENT_IP' );
     else if ( getenv( 'HTTP_FORWARDED' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED' );
     else if ( getenv( 'REMOTE_ADDR' ) )

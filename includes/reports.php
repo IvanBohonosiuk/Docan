@@ -111,7 +111,7 @@ function dokan_get_order_report_data( $args = array(), $start_date, $end_date ) 
         WHERE   posts.post_type     = 'shop_order'
         AND     posts.post_status   != 'trash'
         AND     do.seller_id = {$current_user->ID}
-        AND     do.order_status IN ('" . implode( "','", apply_filters( 'woocommerce_reports_order_statuses', array( 'wc-completed', 'wc-processing', 'wc-on-hold' ) ) ) . "')
+        AND     do.order_status IN ('" . implode( "','", apply_filters( 'woocommerce_reports_order_statuses', array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-v-doroge' ) ) ) . "')
         ";
 
     if ( $filter_range ) {

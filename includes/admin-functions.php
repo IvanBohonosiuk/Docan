@@ -262,7 +262,7 @@ function dokan_site_total_earning() {
 
             FROM {$wpdb->prefix}dokan_orders do
             LEFT JOIN $wpdb->posts p ON do.order_id = p.ID
-            WHERE seller_id != 0 AND p.post_status = 'publish' AND do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
+            WHERE seller_id != 0 AND p.post_status = 'publish' AND do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
             ORDER BY do.order_id DESC";
 
     return $wpdb->get_var( $sql );
@@ -336,7 +336,7 @@ function dokan_admin_report( $group_by = 'day', $year = '' ) {
             WHERE
                 seller_id != 0 AND
                 p.post_status != 'trash' AND
-                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
+                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
                 $date_where
             GROUP BY $group_by_query";
 
@@ -649,7 +649,7 @@ function dokan_admin_report_by_seller( $chosen_seller_id) {
             WHERE
                 seller_id = $chosen_seller_id AND
                 p.post_status != 'trash' AND
-                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
+                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
                 $date_where
             GROUP BY $group_by_query";
 

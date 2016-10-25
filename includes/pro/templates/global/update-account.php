@@ -44,7 +44,7 @@ $cu_slug = get_user_meta( $user_id, 'nickname', true );
 
         <p class="form-row form-group form-row-wide">
             <label for="company-name"><?php _e( 'Shop Name', 'dokan' ); ?> <span class="required">*</span></label>
-            <input type="text" class="input-text form-control" name="shopname" id="company-name" value="<?php if ( ! empty( $_POST['shopname'] ) ) echo esc_attr( $_POST['shopname'] ); ?>" required="required" />
+            <input type="text" class="input-text form-control" name="username" id="company-name" value="<?php if ( ! empty( $_POST['username'] ) ) echo esc_attr( $_POST['username'] ); ?>" required="required" />
         </p>
 
         <p class="form-row form-group form-row-wide">

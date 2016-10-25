@@ -103,7 +103,7 @@ function dokan_count_orders( $user_id ) {
     $counts = wp_cache_get( $cache_key, 'dokan' );
 
     if ( $counts === false ) {
-        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
+        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0,'wc-v-doroge' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
 
         $sql = "SELECT do.order_status
                 FROM {$wpdb->prefix}dokan_orders AS do
@@ -327,6 +327,11 @@ function dokan_get_order_status_class( $status ) {
         case 'on-hold':
         case 'wc-on-hold':
             return 'warning';
+            break;
+
+        case 'v-doroge':
+        case 'wc-v-doroge':
+            return 'info';
             break;
 
         case 'processing':

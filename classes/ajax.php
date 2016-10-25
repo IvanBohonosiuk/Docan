@@ -39,6 +39,7 @@ class Dokan_Ajax {
         add_action( 'wp_ajax_dokan_settings', array( $settings, 'ajax_settings' ) );
 
         add_action( 'wp_ajax_dokan-mark-order-complete', array( $this, 'complete_order' ) );
+        add_action( 'wp_ajax_dokan-mark-order-v-doroge', array( $this, 'v_doroge' ) );
         add_action( 'wp_ajax_dokan-mark-order-processing', array( $this, 'process_order' ) );
         add_action( 'wp_ajax_dokan_grant_access_to_download', array( $this, 'grant_access_to_download' ) );
         add_action( 'wp_ajax_dokan_add_order_note', array( $this, 'add_order_note' ) );
@@ -116,11 +117,45 @@ class Dokan_Ajax {
             die();
         }
 
+        // if ( !current_user_can( 'dokandar' ) || dokan_get_option( 'order_status_change', 'dokan_selling', 'on' ) != 'on' ) {
+        //     wp_die( __( 'You do not have sufficient permissions to access this page.', 'dokan' ) );
+        // }
+
+        if ( !check_admin_referer( 'dokan-mark-order-complete' ) ) {
+            wp_die( __( 'You have taken too long. Please go back and retry.', 'dokan' ) );
+        }
+
+        $order_id = isset($_GET['order_id']) && (int) $_GET['order_id'] ? (int) $_GET['order_id'] : '';
+        if ( !$order_id ) {
+            die();
+        }
+
+        // if ( !dokan_is_seller_has_order( get_current_user_id(), $order_id ) ) {
+        //     wp_die( __( 'You do not have permission to change this order', 'dokan' ) );
+        // }
+
+        $order = new WC_Order( $order_id );
+        $order->update_status( 'completed' );
+
+        wp_safe_redirect( wp_get_referer() );
+        die();
+    }
+
+     /**
+     * Mark a order as v-doroge
+     *
+     * Fires from seller dashboard in frontend
+     */
+    function v_doroge() {
+        if ( !is_admin() ) {
+            die();
+        }
+
         if ( !current_user_can( 'dokandar' ) || dokan_get_option( 'order_status_change', 'dokan_selling', 'on' ) != 'on' ) {
             wp_die( __( 'You do not have sufficient permissions to access this page.', 'dokan' ) );
         }
 
-        if ( !check_admin_referer( 'dokan-mark-order-complete' ) ) {
+        if ( !check_admin_referer( 'dokan-mark-order-v-doroge' ) ) {
             wp_die( __( 'You have taken too long. Please go back and retry.', 'dokan' ) );
         }
 
@@ -134,7 +169,7 @@ class Dokan_Ajax {
         }
 
         $order = new WC_Order( $order_id );
-        $order->update_status( 'completed' );
+        $order->update_status( 'v-doroge' );
 
         wp_safe_redirect( wp_get_referer() );
         die();

@@ -492,6 +492,56 @@ function dokan_process_product_meta( $post_id ) {
         update_post_meta( $post_id, '_sale_price', ( $_POST['_sale_price'] === '' ? '' : wc_format_decimal( $_POST['_sale_price'] ) ) );
     }
 
+    //Добавлення кастомних атрибутів
+
+    if ( isset($_POST['product_location_oblast']) || isset($_POST['product_location_city']) ) {
+        
+        // Text based, separate by pipe
+        $values_obl = $_POST['product_location_oblast'];
+        $values_city = $_POST['product_location_city'];
+
+        // Custom attribute - Add attribute to array and set the values
+        $attributes[ sanitize_title( 'Область' ) ] = array(
+            'name'          => woocommerce_clean( 'Область' ),
+            'value'         => $values_obl . ' | ' . $values_city,
+            'is_visible'    => true,
+        );
+        
+        update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
+
+    if ( isset($_POST['product_sostoyanie']) ) {
+        
+        // Text based, separate by pipe
+        $values = $_POST['product_sostoyanie'];
+
+        // Custom attribute - Add attribute to array and set the values
+        $attributes[ sanitize_title( 'Состояние' ) ] = array(
+            'name'          => woocommerce_clean( 'Состояние' ),
+            'value'         => $values,
+            'is_visible'    => true,
+        );
+        
+        update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
+
+    if ( isset($_POST['product_dostavka']) ) {
+        
+        // Text based, separate by pipe
+        $values = $_POST['product_dostavka'];
+
+        // Custom attribute - Add attribute to array and set the values
+        $attributes[ sanitize_title( 'Доставка' ) ] = array(
+            'name'          => woocommerce_clean( 'Доставка' ),
+            'value'         => $values,
+            'is_visible'    => true,
+        );
+        
+        update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
+
+    // Закінчення добавлення кастомних атрибутів
+
     if ( isset( $_POST['_tax_status'] ) )
         update_post_meta( $post_id, '_tax_status', stripslashes( $_POST['_tax_status'] ) );
 
@@ -884,6 +934,62 @@ function dokan_new_process_product_meta( $post_id ) {
         update_post_meta( $post_id, '_sale_price', ( $_POST['_sale_price'] === '' ? '' : wc_format_decimal( $_POST['_sale_price'] ) ) );
     }
 
+    //Добавлення кастомних атрибутів
+
+    if ( isset($_POST['crsites_locations[]']) || isset($_POST['crsites_locations[]']) ) {
+        
+        // Text based, separate by pipe
+        $values_obl = $_POST['crsites_locations[]'];
+        $values_city = $_POST['crsites_locations[]'];
+
+        // Custom attribute - Add attribute to array and set the values
+        update_post_meta( $post_id, 'crsites_locations[]', $values_obl );
+        update_post_meta( $post_id, 'crsites_locations[]', $values_city );
+
+        // $attributes[ sanitize_title( 'Область' ) ] = array(
+        //     'name'          => woocommerce_clean( 'Область' ),
+        //     'value'         => $values_obl . ' | ' . $values_city,
+        //     'is_visible'    => true,
+        // );
+        
+        // update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
+
+    if ( isset($_POST['crsites_sostoyanie']) ) {
+        
+        // Text based, separate by pipe
+        $values = $_POST['crsites_sostoyanie'];
+
+        // Custom attribute - Add attribute to array and set the values
+
+        update_post_meta( $post_id, 'crsites_sostoyanie', $values );
+        
+        // $attributes[ sanitize_title( 'Состояние' ) ] = array(
+        //     'name'          => woocommerce_clean( 'Состояние' ),
+        //     'value'         => $values,
+        //     'is_visible'    => true,
+        // );
+        
+        // update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
+
+    if ( isset($_POST['crsites_oplata']) ) {
+        
+        // Text based, separate by pipe
+        $values = $_POST['crsites_oplata'];
+
+        // Custom attribute - Add attribute to array and set the values
+        // $attributes[ sanitize_title( 'Доставка' ) ] = array(
+        //     'name'          => woocommerce_clean( 'Доставка' ),
+        //     'value'         => $values,
+        //     'is_visible'    => true,
+        // );
+        
+        update_post_meta( $post_id, 'crsites_oplata', $values );
+    }
+
+    // Закінчення добавлення кастомних атрибутів
+
     // Save extra product options like purchase note, visibility
     update_post_meta( $post_id, '_purchase_note', stripslashes( $_POST['_purchase_note'] ) );
     update_post_meta( $post_id, '_visibility', stripslashes( $_POST['_visibility'] ) );
@@ -1071,6 +1177,57 @@ function dokan_new_process_product_meta( $post_id ) {
         uasort( $attributes, 'attributes_cmp' );
         update_post_meta( $post_id, '_product_attributes', $attributes );
     }
+
+    //Добавлення кастомних атрибутів
+
+    // if ( isset($_POST['product_location_oblast']) || isset($_POST['product_location_city']) ) {
+        
+    //     // Text based, separate by pipe
+    //     $values_obl = $_POST['product_location_oblast'];
+    //     $values_city = $_POST['product_location_city'];
+
+    //     // Custom attribute - Add attribute to array and set the values
+    //     // $attributes[ sanitize_title( 'Область' ) ] = array(
+    //     //     'name'          => woocommerce_clean( 'Область' ),
+    //     //     'value'         => $values_obl . ' | ' . $values_city,
+    //     //     'is_visible'    => true,
+    //     // );
+        
+    //     update_post_meta( $post_id, 'crsites_locations', $values_obl );
+    //     update_post_meta( $post_id, 'crsites_locations', $values_city );
+    // }
+
+    // if ( isset($_POST['product_sostoyanie']) ) {
+        
+    //     // Text based, separate by pipe
+    //     $values = $_POST['product_sostoyanie'];
+
+    //     // Custom attribute - Add attribute to array and set the values
+    //     // $attributes[ sanitize_title( 'Состояние' ) ] = array(
+    //     //     'name'          => woocommerce_clean( 'Состояние' ),
+    //     //     'value'         => $values,
+    //     //     'is_visible'    => true,
+    //     // );
+        
+    //     update_post_meta( $post_id, 'crsites_sostoyanie', $values );
+    // }
+
+    // if ( isset($_POST['product_dostavka']) ) {
+        
+    //     // Text based, separate by pipe
+    //     $values = $_POST['product_dostavka'];
+
+    //     // Custom attribute - Add attribute to array and set the values
+    //     // $attributes[ sanitize_title( 'Доставка' ) ] = array(
+    //     //     'name'          => woocommerce_clean( 'Доставка' ),
+    //     //     'value'         => $values,
+    //     //     'is_visible'    => true,
+    //     // );
+        
+    //     update_post_meta( $post_id, 'crsites_oplata', $values );
+    // }
+
+    // Закінчення добавлення кастомних атрибутів
 
     // Sales and prices
     if ( in_array( $product_type, array( 'variable' ) ) ) {
@@ -2208,7 +2365,7 @@ function dokan_on_create_seller( $user_id, $data ) {
     }
 
     $dokan_settings = array(
-        'store_name'     => strip_tags( $_POST['shopname'] ),
+        'store_name'     => strip_tags( $_POST['username'] ),
         'social'         => array(),
         'payment'        => array(),
         'phone'          => $_POST['phone'],
@@ -2312,6 +2469,41 @@ function dokan_get_best_selling_products( $per_page = 8 ) {
     $best_selling_query = new WP_Query( apply_filters( 'dokan_best_selling_query', $args ) );
 
     return $best_selling_query;
+}
+
+/**
+ * Get best selling products
+ *
+ * Shown on homepage
+ *
+ * @param int $per_page
+ * @return \WP_Query
+ */
+function dokan_get_no_stock_products( $per_page = 5 ) {
+
+    $args = array(
+        'post_type'           => 'product',
+        'post_status'         => 'publish',
+        'ignore_sticky_posts' => 1,
+        'posts_per_page'      => $per_page,
+        'orderby'             => 'meta_value_num',
+        'meta_query'          => array(
+            array(
+                'key'     => '_visibility',
+                'value'   => array( 'catalog', 'visible' ),
+                'compare' => 'IN'
+            ),
+            array(
+                'key'       => '_stock_status',
+                'value'     => 'outofstock',
+                'compare'   => '='
+            )
+        )
+    );
+
+    $no_stock_query = new WP_Query( apply_filters( 'dokan_no_stock_query', $args ) );
+
+    return $no_stock_query;
 }
 
 
@@ -2513,7 +2705,7 @@ function dokan_user_update_to_seller( $user, $data ) {
     }
 
     $dokan_settings = array(
-        'store_name'     => $data['shopname'],
+        'store_name'     => $data['username'],
         'social'         => array(),
         'payment'        => array(),
         'phone'          => $data['phone'],
@@ -2550,7 +2742,7 @@ function dokan_become_seller_handler () {
         $checks = array(
             'fname'    => __( 'Enter your first name', 'dokan' ),
             'lname'    => __( 'Enter your last name', 'dokan' ),
-            'shopname' => __( 'Enter your shop name', 'dokan' ),
+            'username' => __( 'Enter your shop name', 'dokan' ),
             'address'  => __( 'Enter your shop address', 'dokan' ),
             'phone'    => __( 'Enter your phone number', 'dokan' ),
         );

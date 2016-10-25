@@ -54,8 +54,8 @@
                         <th><?php _e( 'Status', 'dokan' ); ?></th>
                         <th><?php _e( 'SKU', 'dokan' ); ?></th>
                         <th><?php _e( 'Stock', 'dokan' ); ?></th>
-                        <th><?php _e( 'Price', 'dokan' ); ?></th>
-                        <th><?php _e( 'Type', 'dokan' ); ?></th>
+                        <th width="120px"><?php _e( 'Price', 'dokan' ); ?></th>
+                        <!-- <th><?php _e( 'Type', 'dokan' ); ?></th> -->
                         <th><?php _e( 'Views', 'dokan' ); ?></th>
                         <th><?php _e( 'Date', 'dokan' ); ?></th>
                     </tr>
@@ -156,30 +156,30 @@
                                     }
                                     ?>
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <?php
-                                        if( $product->product_type == 'grouped' ):
-                                            echo '<span class="product-type tips grouped" title="' . __( 'Grouped', 'woocommerce' ) . '"></span>';
-                                        elseif ( $product->product_type == 'external' ):
-                                            echo '<span class="product-type tips external" title="' . __( 'External/Affiliate', 'woocommerce' ) . '"></span>';
-                                        elseif ( $product->product_type == 'simple' ):
+                                        // if( $product->product_type == 'grouped' ):
+                                        //     echo '<span class="product-type tips grouped" title="' . __( 'Grouped', 'woocommerce' ) . '"></span>';
+                                        // elseif ( $product->product_type == 'external' ):
+                                        //     echo '<span class="product-type tips external" title="' . __( 'External/Affiliate', 'woocommerce' ) . '"></span>';
+                                        // elseif ( $product->product_type == 'simple' ):
 
-                                            if ( $product->is_virtual() ) {
-                                                echo '<span class="product-type tips virtual" title="' . __( 'Virtual', 'woocommerce' ) . '"></span>';
-                                            } elseif ( $product->is_downloadable() ) {
-                                                echo '<span class="product-type tips downloadable" title="' . __( 'Downloadable', 'woocommerce' ) . '"></span>';
-                                            } else {
-                                                echo '<span class="product-type tips simple" title="' . __( 'Simple', 'woocommerce' ) . '"></span>';
-                                            }
+                                        //     if ( $product->is_virtual() ) {
+                                        //         echo '<span class="product-type tips virtual" title="' . __( 'Virtual', 'woocommerce' ) . '"></span>';
+                                        //     } elseif ( $product->is_downloadable() ) {
+                                        //         echo '<span class="product-type tips downloadable" title="' . __( 'Downloadable', 'woocommerce' ) . '"></span>';
+                                        //     } else {
+                                        //         echo '<span class="product-type tips simple" title="' . __( 'Simple', 'woocommerce' ) . '"></span>';
+                                        //     }
 
-                                        elseif ( $product->product_type == 'variable' ):
-                                            echo '<span class="product-type tips variable" title="' . __( 'Variable', 'woocommerce' ) . '"></span>';
-                                        else:
-                                            // Assuming that we have other types in future
-                                            echo '<span class="product-type tips ' . $product->product_type . '" title="' . ucfirst( $product->product_type ) . '"></span>';
-                                        endif;
+                                        // elseif ( $product->product_type == 'variable' ):
+                                        //     echo '<span class="product-type tips variable" title="' . __( 'Variable', 'woocommerce' ) . '"></span>';
+                                        // else:
+                                        //     // Assuming that we have other types in future
+                                        //     echo '<span class="product-type tips ' . $product->product_type . '" title="' . ucfirst( $product->product_type ) . '"></span>';
+                                        // endif;
                                     ?>
-                                </td>
+                                </td> -->
                                 <td>
                                     <?php echo (int) get_post_meta( $post->ID, 'pageview', true ); ?>
                                 </td>

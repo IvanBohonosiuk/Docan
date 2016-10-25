@@ -31,12 +31,12 @@
         </span>
     </li>
     <?php if ( !empty( $store_info['address'] ) ) { ?>
-        <li class="store-address">
+        <!-- <li class="store-address">
             <span><b><?php _e( 'Address:', 'dokan' ); ?></b></span>
             <span class="details">
                 <?php echo dokan_get_seller_address( $author->ID ) ?>
             </span>
-        </li>
+        </li> -->
     <?php } ?>
 
     <li class="clearfix">
