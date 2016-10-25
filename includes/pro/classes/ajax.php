@@ -52,6 +52,74 @@ class Dokan_Pro_Ajax {
         add_action( 'wp_ajax_nopriv_dokan_remove_single_variation_item', array( $this, 'remove_single_variation_item') );
         add_action( 'wp_ajax_dokan_get_pre_attribute', array( $this, 'add_predefined_attribute') );
         add_action( 'wp_ajax_nopriv_dokan_get_pre_attribute', array( $this, 'add_predefined_attribute') );
+        add_action( 'wp_ajax_dokan_load_order_items', array( $this, 'load_order_items') );
+        add_action( 'wp_ajax_nopriv_dokan_load_order_items', array( $this, 'load_order_items') );
+
+        add_action( 'wp_ajax_dokan_refund_request', array( $this, 'dokan_refund_request') );
+        add_action( 'wp_ajax_nopriv_dokan_refund_request', array( $this, 'dokan_refund_request') );
+    }
+
+
+    /**
+     * insert refund request via ajax
+     *
+     * @since 2.4.11
+     *
+     */
+    public function dokan_refund_request() {
+
+        check_ajax_referer( 'order-item', 'security' );
+
+        $seller_id = dokan_get_seller_id_by_order($_POST['order_id']);
+        $_POST['seller_id'] = $seller_id;
+        $_POST['status'] = 0;
+
+        // Validate that the refund can occur
+        $refund_amount          = wc_format_decimal( sanitize_text_field( $_POST['refund_amount'] ), wc_get_price_decimals() );
+        $order       = wc_get_order( $_POST['order_id'] );
+        $order_items = $order->get_items();
+        $max_refund  = wc_format_decimal( $order->get_total() - $order->get_total_refunded(), wc_get_price_decimals() );
+        $refund = new Dokan_Pro_Refund;
+        if ( ! $refund_amount || $max_refund < $refund_amount || 0 > $refund_amount ) {
+            $data =  __( 'Invalid refund amount', 'dokan' );
+            wp_send_json_error( $data );
+        } else if ( $refund->has_pending_refund_request( $_POST['order_id'] ) ) {
+            $data =  __( 'You have already a processing refund request for this order.', 'dokan' );
+            wp_send_json_error( $data );
+        } else{ 
+            $refund = new Dokan_Pro_Refund;
+            $refund->insert_refund($_POST);
+            Dokan_Email::init()->dokan_refund_request( $_POST['order_id'] );
+            $data = __( 'Refund request sent successfully', 'dokan' );
+            wp_send_json_success( $data );
+        }
+
+    }
+
+
+    /**
+     * Load State via ajax for refund
+     *
+     * @since 2.4.11
+     *
+     * @return html Set of states
+     */
+    public function load_order_items() {
+
+        check_ajax_referer( 'order-item', 'security' );
+
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            die(-1);
+        }
+
+
+        // Return HTML items
+        $order_id = absint( $_POST['order_id'] );
+        $order    = wc_get_order( $order_id );
+        $data     = get_post_meta( $order_id );
+        include( DOKAN_INC_DIR . '/pro/templates/orders/views/html-order-items.php' );
+
+        die();
     }
 
     /**
@@ -338,7 +406,7 @@ class Dokan_Pro_Ajax {
 
                         // Select based attributes - Format values (posted values are slugs)
                         if ( is_array( $attribute_values[ $i ] ) ) {
-                            $values = array_map( 'sanitize_title', $attribute_values[ $i ] );
+                            $values = $attribute_values[ $i ];
 
                         // Text based attributes - Posted values are term names - don't change to slugs
                         } else {
@@ -358,7 +426,7 @@ class Dokan_Pro_Ajax {
 
                     if ( $values ) {
                         // Add attribute to array, but don't set values
-                        $attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
+                        $attributes[ $attribute_names[ $i ] ] = array(
                             'name'          => wc_clean( $attribute_names[ $i ] ),
                             'value'         => '',
                             'position'      => $attribute_position[ $i ],
@@ -374,7 +442,7 @@ class Dokan_Pro_Ajax {
                     $values = implode( ' ' . WC_DELIMITER . ' ', array_map( 'wc_clean', array_map( 'stripslashes', $attribute_values[ $i ] ) ) );
 
                     // Custom attribute - Add attribute to array and set the values
-                    $attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
+                    $attributes[ $attribute_names[ $i ] ] = array(
                         'name'          => wc_clean( $attribute_names[ $i ] ),
                         'value'         => $values,
                         'position'      => $attribute_position[ $i ],
@@ -453,7 +521,7 @@ class Dokan_Pro_Ajax {
 
                         // Select based attributes - Format values (posted values are slugs)
                         if ( is_array( $attribute_values[ $i ] ) ) {
-                            $values = array_map( 'sanitize_title', $attribute_values[ $i ] );
+                            $values = $attribute_values[ $i ];
 
                         // Text based attributes - Posted values are term names - don't change to slugs
                         } else {
@@ -473,7 +541,7 @@ class Dokan_Pro_Ajax {
 
                     if ( $values ) {
                         // Add attribute to array, but don't set values
-                        $attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
+                        $attributes[ $attribute_names[ $i ] ] = array(
                             'name'          => wc_clean( $attribute_names[ $i ] ),
                             'value'         => '',
                             'position'      => $attribute_position[ $i ],
@@ -489,7 +557,7 @@ class Dokan_Pro_Ajax {
                     $values = implode( ' ' . WC_DELIMITER . ' ', array_map( 'wc_clean', array_map( 'stripslashes', $attribute_values[ $i ] ) ) );
 
                     // Custom attribute - Add attribute to array and set the values
-                    $attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
+                    $attributes[ $attribute_names[ $i ] ] = array(
                         'name'          => wc_clean( $attribute_names[ $i ] ),
                         'value'         => $values,
                         'position'      => $attribute_position[ $i ],
@@ -753,8 +821,8 @@ class Dokan_Pro_Ajax {
                 foreach ( $attributes as $attribute ) {
 
                     if ( $attribute['is_variation'] ) {
-                        $attribute_key = 'attribute_' . sanitize_title( $attribute['name'] );
-                        $value         = isset( $postdata[ $attribute_key ][ $i ] ) ? sanitize_title( stripslashes( $postdata[ $attribute_key ][ $i ] ) ) : '';
+                        $attribute_key = 'attribute_' . $attribute['name'];
+                        $value         = isset( $postdata[ $attribute_key ][ $i ] ) ? stripslashes( $postdata[ $attribute_key ][ $i ] ) : '';
                         $updated_attribute_keys[] = $attribute_key;
                         update_post_meta( $variation_id, $attribute_key, $value );
                     }
@@ -781,13 +849,13 @@ class Dokan_Pro_Ajax {
             if ( $attribute['is_variation'] ) {
 
                 // Don't use wc_clean as it destroys sanitized characters
-                if ( isset( $postdata[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) )
-                    $value = sanitize_title( trim( stripslashes( $postdata[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
+                if ( isset( $postdata[ 'default_attribute_' . $attribute['name'] ] ) )
+                    $value = trim( stripslashes( $postdata[ 'default_attribute_' . $attribute['name'] ] ) );
                 else
                     $value = '';
 
                 if ( $value )
-                    $default_attributes[ sanitize_title( $attribute['name'] ) ] = $value;
+                    $default_attributes[ $attribute['name'] ] = $value;
             }
         }
 
@@ -867,8 +935,10 @@ class Dokan_Pro_Ajax {
                 <input type="hidden" name="attribute_names[]" value="<?php echo esc_attr( $attribute_taxonomy_name ); ?>" class="dokan-<?php echo $single; ?>attribute-option-name">
                 <input type="hidden" name="attribute_is_taxonomy[]" value="1">
             </td>
-            <td colspan="3"><input type="text" name="attribute_values[]" value="<?php echo implode( ',', $att_val ); ?>" class="dokan-form-control dokan-<?php echo $single; ?>attribute-option-values"></td>
-            <td><button class="dokan-btn dokan-btn-theme remove_<?php echo $remove_btn; ?>attribute"><i class="fa fa-trash-o"></i></button></td>
+            <td colspan="3"><input type="text" name="attribute_values[]" value="<?php echo implode( ',', $att_val ); ?>" data-preset_attr="<?php echo implode( ',', $att_val ); ?>" class="dokan-form-control dokan-<?php echo $single; ?>attribute-option-values"></td>
+            <td><button title="<?php _e( 'Clear All' , 'dokan' ) ?>"class="dokan-btn dokan-btn-theme clear_attributes"><?php _e( 'Clear' , 'dokan' ) ?></button>
+                <button title="Delete" class="dokan-btn dokan-btn-theme remove_<?php echo $remove_btn; ?>attribute"><i class="fa fa-trash-o"></i></button>
+            </td>
         </tr>
         <?php
         $content = ob_get_clean();
@@ -1011,7 +1081,7 @@ class Dokan_Pro_Ajax {
 
             if ( ! $attribute['is_variation'] ) continue;
 
-            $attribute_field_name = 'attribute_' . sanitize_title( $attribute['name'] );
+            $attribute_field_name = 'attribute_' . $attribute['name'] ;
 
             if ( $attribute['is_taxonomy'] ) {
                 $post_terms = wp_get_post_terms( $post_id, $attribute['name'] );
@@ -1023,7 +1093,7 @@ class Dokan_Pro_Ajax {
                 $options = explode( WC_DELIMITER, $attribute['value'] );
             }
 
-            $options = array_map( 'sanitize_title', array_map( 'trim', $options ) );
+            $options = array_map( 'trim', $options );
 
             $variations[ $attribute_field_name ] = $options;
         }

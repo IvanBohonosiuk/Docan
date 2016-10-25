@@ -213,20 +213,6 @@ function dokan_order_listing_status_filter() {
                 <?php printf( __( 'Processing (%d)', 'dokan' ), $orders_counts->{'wc-processing'} ); ?></span>
             </a>
         </li>
-        <li<?php echo $status_class == 'wc-v-doroge' ? ' class="active"' : ''; ?>>
-            <?php
-                if( $order_date ) {
-                    $date_filter = array(
-                        'order_date' => $order_date,
-                        'dokan_order_filter' => 'Filter',
-                    );
-                }
-                $shipping_order_url = array_merge( $date_filter, array( 'order_status' => 'wc-v-doroge' ) );
-            ?>
-            <a href="<?php echo add_query_arg( $shipping_order_url, $orders_url ); ?>">
-                <?php printf( __( 'В дороге (%d)', 'dokan' ), $orders_counts->{'wc-v-doroge'} ); ?></span>
-            </a>
-        </li>
         <li<?php echo $status_class == 'wc-on-hold' ? ' class="active"' : ''; ?>>
             <?php
                 if( $order_date ) {
@@ -306,7 +292,7 @@ function dokan_get_dashboard_nav() {
 
     $urls = array(
         'dashboard' => array(
-            'title' => __( 'Личный кабинет', 'dokan'),
+            'title' => __( 'Dashboard', 'dokan'),
             'icon'  => '<i class="fa fa-tachometer"></i>',
             'url'   => dokan_get_navigation_url(),
             'pos'   => 10
@@ -330,16 +316,10 @@ function dokan_get_dashboard_nav() {
             'url'   => dokan_get_navigation_url( 'withdraw' ),
             'pos'   => 70
         ),
-        // 'quit' => array(
-        //     'title' => __( 'Выйти', 'dokan'),
-        //     'icon'  => '<i class="fa fa-sign-out"></i>',
-        //     'url'   => home_url().'/my-account/customer-logout',
-        //     'pos'   => 70
-        // ),
     );
 
     $settings = array(
-        'title' => __( 'Настройки <i class="fa fa-angle-right pull-right"></i>', 'dokan'),
+        'title' => __( 'Settings <i class="fa fa-angle-right pull-right"></i>', 'dokan'),
         'icon'  => '<i class="fa fa-cog"></i>',
         'url'   => dokan_get_navigation_url( 'settings/store' ),
         'pos'   => 200,
@@ -353,18 +333,19 @@ function dokan_get_dashboard_nav() {
             'pos'   => 10
         ),
         'store' => array(
-            'title' => __( 'Магазин', 'dokan'),
+            'title' => __( 'Store', 'dokan'),
             'icon'  => '<i class="fa fa-university"></i>',
             'url'   => dokan_get_navigation_url( 'settings/store' ),
             'pos'   => 30
         ),
         'payment' => array(
-            'title' => __( 'Платежи', 'dokan'),
+            'title' => __( 'Payment', 'dokan'),
             'icon'  => '<i class="fa fa-credit-card"></i>',
             'url'   => dokan_get_navigation_url( 'settings/payment' ),
             'pos'   => 50
         )
     );
+
 
     /**
      * Filter to get the seller dashboard settings navigation.
@@ -424,6 +405,13 @@ function dokan_dashboard_nav( $active_menu = '' ) {
         $class = ( $active_menu == $key ) ? 'active ' . $key : $key;
         $menu .= sprintf( '<li class="%s"><a href="%s">%s %s</a></li>', $class, $item['url'], $item['icon'], $item['title'] );
     }
+
+    $menu .= '<li class="dokan-common-links dokan-clearfix">
+            <a title="' . __( 'Visit Store', 'dokan' ) . '" class="tips" data-placement="top" href="' . dokan_get_store_url( get_current_user_id()) .'" target="_blank"><i class="fa fa-external-link"></i></a>
+            <a title="' . __( 'Edit Account', 'dokan' ) . '" class="tips" data-placement="top" href="' . dokan_get_navigation_url( 'edit-account' ) . '"><i class="fa fa-user"></i></a>
+            <a title="' . __( 'Log out', 'dokan' ) . '" class="tips" data-placement="top" href="' . wp_logout_url( site_url() ) . '"><i class="fa fa-power-off"></i></a>
+        </li>';
+
     $menu .= '</ul>';
 
     return $menu;
@@ -566,8 +554,6 @@ function dokan_myorder_login_check(){
     }
 }
 
-//Render Store listing shortcode as it appears without logged in
-add_shortcode( 'dokan-stores', 'store_listing' );
 
  /**
  * Displays the store lists
@@ -578,115 +564,70 @@ add_shortcode( 'dokan-stores', 'store_listing' );
  *
  * @return string
  */
-function store_listing( $atts ) {
+function dokan_store_listing( $atts ) {
     global $post;
 
     /**
-    * Filter return the number of store listing number per page.
-    *
-    * @since 2.2
-    *
-    * @param array
-    */
+     * Filter return the number of store listing number per page.
+     *
+     * @since 2.2
+     *
+     * @param array
+     */
     $attr = shortcode_atts( apply_filters( 'dokan_store_listing_per_page', array(
         'per_page' => 10,
+        'search'   => 'yes'
     ) ), $atts );
 
-    $paged  = max( 1, get_query_var( 'paged' ) );
-    $limit  = $attr['per_page'];
-    $offset = ( $paged - 1 ) * $limit;
+    $paged   = max( 1, get_query_var( 'paged' ) );
+    $limit   = $attr['per_page'];
+    $offset  = ( $paged - 1 ) * $limit;
 
-    $sellers = dokan_get_sellers( $limit, $offset );
+    $seller_args = array(
+        'number' => $limit,
+        'offset' => $offset
+    );
 
-    ob_start();
-
-    if ( $sellers['users'] ) {
-    ?>
-    <ul class="dokan-seller-wrap">
-        <?php
-        foreach ( $sellers['users'] as $seller ) {
-            $store_info = dokan_get_store_info( $seller->ID );
-            $banner_id  = isset( $store_info['banner'] ) ? $store_info['banner'] : 0;
-            $store_name = isset( $store_info['store_name'] ) ? esc_html( $store_info['store_name'] ) : __( 'N/A', 'dokan' );
-            $store_url  = dokan_get_store_url( $seller->ID );
-            ?>
-
-            <li class="dokan-single-seller">
-                <div class="dokan-store-thumbnail">
-
-                    <a href="<?php echo $store_url; ?>">
-                        <?php if ( $banner_id ) {
-                            $banner_url = wp_get_attachment_image_src( $banner_id, 'medium' );
-                            ?>
-                            <img class="dokan-store-img" src="<?php echo esc_url( $banner_url[0] ); ?>" alt="<?php echo esc_attr( $store_name ); ?>">
-                        <?php } else { ?>
-                            <img class="dokan-store-img" src="<?php echo dokan_get_no_seller_image(); ?>" alt="<?php _e( 'No Image', 'dokan' ); ?>">
-                        <?php } ?>
-                    </a>
-
-                    <div class="dokan-store-caption">
-                        <h3><a href="<?php echo $store_url; ?>"><?php echo $store_name; ?></a></h3>
-
-                        <address>
-
-                            <?php 
-                                // if ( isset( $store_info['address'] ) && !empty( $store_info['address'] ) ) {
-                                //     echo dokan_get_seller_address( $seller->ID );
-                                // } 
-                            ?>
-
-                            <?php if ( isset( $store_info['phone'] ) && !empty( $store_info['phone'] ) ) { ?>
-                                <br>
-                                <abbr title="<?php _e( 'Phone Number', 'dokan' ); ?>"><?php _e( 'P:', 'dokan' ); ?></abbr> <?php echo esc_html( $store_info['phone'] ); ?>
-                            <?php } ?>
-
-                        </address>
-
-                        <p><a class="dokan-btn dokan-btn-theme" href="<?php echo $store_url; ?>"><?php _e( 'Visit Store', 'dokan' ); ?></a></p>
-
-                    </div> <!-- .caption -->
-                </div> <!-- .thumbnail -->
-            </li> <!-- .single-seller -->
-        <?php } ?>
-    </ul> <!-- .dokan-seller-wrap -->
-
-    <?php
-        $user_count = $sellers['count'];
-        $num_of_pages = ceil( $user_count / $limit );
-
-        if ( $num_of_pages > 1 ) {
-            echo '<div class="pagination-container clearfix">';
-            $page_links = paginate_links( array(
-                    'current'   => $paged,
-                    'total'     => $num_of_pages,
-                    'base'      => str_replace( $post->ID, '%#%', esc_url( get_pagenum_link( $post->ID ) ) ),
-                    'type'      => 'array',
-                    'prev_text' => __( '&larr; Previous', 'dokan' ),
-                    'next_text' => __( 'Next &rarr;', 'dokan' ),
-                ) );
-
-            if ( $page_links ) {
-                $pagination_links  = '<div class="pagination-wrap">';
-                $pagination_links .= '<ul class="pagination"><li>';
-                $pagination_links .= join( "</li>\n\t<li>", $page_links );
-                $pagination_links .= "</li>\n</ul>\n";
-                $pagination_links .= '</div>';
-
-                echo $pagination_links;
-            }
-
-            echo '</div>';
+    // if search is enabled, perform a search
+    if ( 'yes' == $attr['search'] ) {
+        $search_term = isset( $_GET['dokan_seller_search'] ) ? sanitize_text_field( $_GET['dokan_seller_search'] ) : '';
+        if ( '' != $search_term ) {
+            $seller_args['meta_query']   = array( 
+                    array(
+                        'key'     => 'dokan_store_name',
+                        'value'   => $search_term,
+                        'compare' => 'LIKE'
+                    ),
+                    array(
+                        'key'     => 'dokan_enable_selling',
+                        'value'   => 'yes',
+                        'compare' => '='
+                    )
+                );
         }
-    ?>
-
-    <?php
-    } else {
-    ?>
-        <p class="dokan-error"><?php _e( 'No seller found!', 'dokan' ); ?></p>
-    <?php
     }
 
+    $sellers = dokan_get_sellers( apply_filters( 'dokan_seller_listing_args', $seller_args ) );
+
+    /**
+     * Filter for store listing args
+     *
+     * @since 2.4.9
+     */
+    $template_args = apply_filters( 'dokan_store_list_args', array(
+        'sellers'    => $sellers,
+        'limit'      => $limit,
+        'offset'     => $offset,
+        'paged'      => $paged,
+        'image_size' => 'medium',
+        'search'     => $attr['search']
+    ) );
+
+    ob_start();
+    dokan_get_template_part( 'store-lists', false, $template_args );
     $content = ob_get_clean();
 
     return apply_filters( 'dokan_seller_listing', $content, $attr );
 }
+
+add_shortcode( 'dokan-stores', 'dokan_store_listing' );

@@ -262,7 +262,7 @@ function dokan_site_total_earning() {
 
             FROM {$wpdb->prefix}dokan_orders do
             LEFT JOIN $wpdb->posts p ON do.order_id = p.ID
-            WHERE seller_id != 0 AND p.post_status = 'publish' AND do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
+            WHERE seller_id != 0 AND p.post_status = 'publish' AND do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
             ORDER BY do.order_id DESC";
 
     return $wpdb->get_var( $sql );
@@ -336,16 +336,12 @@ function dokan_admin_report( $group_by = 'day', $year = '' ) {
             WHERE
                 seller_id != 0 AND
                 p.post_status != 'trash' AND
-                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
+                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
                 $date_where
             GROUP BY $group_by_query";
 
 
     $data = $wpdb->get_results( $sql );
-
-    // echo $sql;
-    // var_dump($data);
-    // var_dump($data, $barwidth, $start_date, $end_date);
     // Prepare data for report
     $order_counts      = dokan_prepare_chart_data( $data, 'order_date', 'total_orders', $chart_interval, $start_date_to_time, $group_by );
     $order_amounts     = dokan_prepare_chart_data( $data, 'order_date', 'order_total', $chart_interval, $start_date_to_time, $group_by );
@@ -649,7 +645,7 @@ function dokan_admin_report_by_seller( $chosen_seller_id) {
             WHERE
                 seller_id = $chosen_seller_id AND
                 p.post_status != 'trash' AND
-                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing', 'wc-v-doroge')
+                do.order_status IN ('wc-on-hold', 'wc-completed', 'wc-processing')
                 $date_where
             GROUP BY $group_by_query";
 

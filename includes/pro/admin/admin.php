@@ -37,7 +37,13 @@ class Dokan_Pro_Admin_Settings {
      * @return void
      */
     public function load_admin_settings( $capability, $menu_position ) {
+        $refund      = dokan_get_refund_count();
+        $refund_text = __( 'Refund Request', 'dokan' );
 
+        if ( $refund['pending'] ) {
+            $refund_text = sprintf( __( 'Refund Request %s', 'dokan' ), '<span class="awaiting-mod count-1"><span class="pending-count">' . $refund['pending'] . '</span></span>');
+        }
+        add_submenu_page( 'dokan', __( 'Refund Request', 'dokan' ), $refund_text, $capability, 'dokan-refund', array($this, 'refund_request') );
         add_submenu_page( 'dokan', __( 'Sellers Listing', 'dokan' ), __( 'All Sellers', 'dokan' ), $capability, 'dokan-sellers', array($this, 'seller_listing') );
         $report       = add_submenu_page( 'dokan', __( 'Earning Reports', 'dokan' ), __( 'Earning Reports', 'dokan' ), $capability, 'dokan-reports', array($this, 'report_page') );
         $announcement = add_submenu_page( 'dokan', __( 'Announcement', 'dokan' ), __( 'Announcement', 'dokan' ), $capability, 'edit.php?post_type=dokan_announcement' );
@@ -46,6 +52,8 @@ class Dokan_Pro_Admin_Settings {
         add_action( $report, array($this, 'report_scripts' ) );
         add_action( 'admin_print_scripts-post-new.php', array( $this, 'announcement_scripts' ), 11 );
         add_action( 'admin_print_scripts-post.php', array( $this, 'announcement_scripts' ), 11 );
+
+        add_submenu_page( 'dokan', __( 'Help', 'dokan' ), __( '<span style="color:#f18500">Help</span>', 'dokan' ), $capability, 'dokan-help', array($this, 'help_page') );
     }
 
     /**
@@ -65,6 +73,12 @@ class Dokan_Pro_Admin_Settings {
                 'desc'    => __( 'Enable showing Store location map on store left sidebar', 'dokan' ),
                 'type'    => 'checkbox',
                 'default' => 'on'
+            ),
+            'gmap_api_key' => array(
+                'name'    => 'gmap_api_key',
+                'label'   => __( 'Google Map API key', 'dokan' ),
+                'desc'    => __( '<a href="https://developers.google.com/maps/documentation/javascript/" target="_blank">API Key</a> is needed to display map on store page', 'dokan' ),
+                'type'    => 'text',
             ),
             'store_seo' => array(
                 'name'    => 'store_seo',
@@ -137,7 +151,7 @@ class Dokan_Pro_Admin_Settings {
                     'publish' => __( 'Published', 'dokan' ),
                     'pending' => __( 'Pending Review', 'dokan' )
                 )
-            ),            
+            ),
             'review_edit' => array(
                 'name'    => 'review_edit',
                 'label'   => __( 'Review Editing', 'dokan' ),
@@ -154,8 +168,8 @@ class Dokan_Pro_Admin_Settings {
                 'label'   => __( 'Order Status for Withdraw', 'dokan' ),
                 'desc'    => __( 'Order status for which seller can make a withdraw request.', 'dokan' ),
                 'type'    => 'multicheck',
-                'default' => array( 'wc-completed' => __( 'Completed', 'dokan' ), 'wc-processing' => __( 'Processing', 'dokan' ), 'wc-v-doroge' => __( 'В дороге', 'dokan' ), 'wc-on-hold' => __( 'On-hold', 'dokan' ) ),
-                'options' => array( 'wc-completed' => __( 'Completed', 'dokan' ), 'wc-processing' => __( 'Processing', 'dokan' ), 'wc-v-doroge' => __( 'В дороге', 'dokan' ), 'wc-on-hold' => __( 'On-hold', 'dokan' ) )
+                'default' => array( 'wc-completed' => __( 'Completed', 'dokan' ), 'wc-processing' => __( 'Processing', 'dokan' ), 'wc-on-hold' => __( 'On-hold', 'dokan' ) ),
+                'options' => array( 'wc-completed' => __( 'Completed', 'dokan' ), 'wc-processing' => __( 'Processing', 'dokan' ), 'wc-on-hold' => __( 'On-hold', 'dokan' ) )
             ),
             'withdraw_date_limit' => array(
                 'name'    => 'withdraw_date_limit',
@@ -201,6 +215,17 @@ class Dokan_Pro_Admin_Settings {
     }
 
     /**
+     * Refund request template
+     *
+     * @since 2.4.11
+     *
+     * @return void
+     */
+    function refund_request() {
+        include dirname(__FILE__) . '/refund.php';
+    }
+
+    /**
      * Seller Listing template
      *
      * @since 2.4
@@ -232,6 +257,17 @@ class Dokan_Pro_Admin_Settings {
      */
     function tools_page() {
         include dirname(__FILE__) . '/tools.php';
+    }
+
+    /**
+     * Plugin help page
+     *
+     * @since 2.4.9
+     *
+     * @return void
+     */
+    function help_page() {
+        include dirname(__FILE__) . '/help.php';
     }
 
     /**

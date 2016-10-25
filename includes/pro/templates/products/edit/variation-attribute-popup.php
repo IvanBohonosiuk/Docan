@@ -16,7 +16,7 @@
                 <thead>
                     <tr>
                         <th><?php _e( 'Option Name', 'dokan' ) ?> <span class="tips" title="" data-original-title="Enter you variation attribute option name">[?]</span></th>
-                        <th width="22%"><?php _e( 'Option Values', 'dokan' ) ?> <span class="tips" title="" data-original-title="Enter attribute options values corresponding options name">[?]</span></th>
+                        <th width="22%"><?php _e( 'Option Values', 'dokan' ) ?> <span class="tips" title="" data-original-title="Enter attribute option values separated by '|' or tab ">[?]</span></th>
                         <th width="7%">
                             <span class="dokan-loading dokan-attr-option-loading dokan-hide"></span>
                         </th>
@@ -50,9 +50,9 @@
                             </td>
                             <td colspan="3">
                                 <# if ( attr_val.is_taxonomy ) { #>
-                                    <input type="text" name="attribute_values[]" value="{{ attr_val.term_value.replace(/\|/g, ',' ) }}" class="dokan-form-control dokan-single-attribute-option-values">
+                                    <input type="text" name="attribute_values[]" value="{{ attr_val.term_value.replace(/ +\|+ /g, ',' ) }}" data-preset_attr="{{ attr_val.term_value.replace(/ +\|+ /g, ',' ) }}" class="dokan-form-control dokan-single-attribute-option-values">
                                 <# } else { #>
-                                    <input type="text" name="attribute_values[]" value="{{ attr_val.value.replace(/\|/g, ',' ) }}" class="dokan-form-control dokan-single-attribute-option-values">
+                                    <input type="text" name="attribute_values[]" value="{{ attr_val.value.replace(/ +\|+ /g, ',' ) }}" data-preset_attr="{{ attr_val.value.replace(/ +\|+ /g, ',' ) }}" class="dokan-form-control dokan-single-attribute-option-values">
                                 <# } #>
                             </td>
                             <td><button class="dokan-btn dokan-btn-theme remove_single_attribute"><i class="fa fa-trash-o"></i></button></td>
@@ -64,7 +64,7 @@
                                 <input type="text" name="attribute_names[]" value="" class="dokan-form-control dokan-single-attribute-option-name">
                                 <input type="hidden" name="attribute_is_taxonomy[]" value="0">
                             </td>
-                            <td><input type="text" name="attribute_values[]" value="" class="dokan-form-control dokan-single-attribute-option-values"></td>
+                            <td><input type="text" name="attribute_values[]" value="" data-preset_attr="" class="dokan-form-control dokan-single-attribute-option-values"></td>
                             <td><button class="dokan-btn dokan-btn-theme remove_single_attribute"><i class="fa fa-trash-o"></i></button></td>
                         </tr>
                     <# } #>

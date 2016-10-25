@@ -223,15 +223,15 @@ class Dokan_Admin_User_Profile {
                 </tr>
 
                 <tr>
-                    <th><?php _e( 'Featured Seller', 'wedevs' ); ?></th>
+                    <th><?php _e( 'Featured Seller', 'dokan' ); ?></th>
                     <td>
                         <label for="dokan_feature">
                             <input type="hidden" name="dokan_feature" value="no">
                             <input name="dokan_feature" type="checkbox" id="dokan_feature" value="yes" <?php checked( $feature_seller, 'yes' ); ?> />
-                            <?php _e( 'Mark as featured seller', 'wedevs' ); ?>
+                            <?php _e( 'Mark as featured seller', 'dokan' ); ?>
                         </label>
 
-                        <p class="description"><?php _e( 'This seller will be marked as a featured seller.', 'wedevs' ) ?></p>
+                        <p class="description"><?php _e( 'This seller will be marked as a featured seller.', 'dokan' ) ?></p>
                     </td>
                 </tr>
 
@@ -379,6 +379,7 @@ class Dokan_Admin_User_Profile {
         update_user_meta( $user_id, 'dokan_publishing', $publishing );
         update_user_meta( $user_id, 'dokan_seller_percentage', $percentage );
         update_user_meta( $user_id, 'dokan_feature_seller', $feature_seller );
+        update_user_meta( $user_id, 'dokan_store_name', $store_settings['store_name'] );
 
         do_action( 'dokan_process_seller_meta_fields', $user_id );
     }

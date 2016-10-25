@@ -30,11 +30,6 @@
                 <a href="<?php echo add_query_arg( array( 'order_status' => 'wc-pending' ), $orders_url ); ?>" style="color: <?php echo $order_data[1]['color']; ?>">
                     <span class="title"><?php _e( 'Pending', 'dokan' ); ?></span> <span class="count"><?php echo number_format_i18n( $orders_count->{'wc-pending'}, 0 );; ?></span>
                 </a>
-            </li> 
-            <li>
-                <a href="<?php echo add_query_arg( array( 'order_status' => 'wc-v-doroge' ), $orders_url ); ?>" style="color: <?php echo $order_data[7]['color']; ?>">
-                    <span class="title"><?php _e( 'В дороге', 'dokan' ); ?></span> <span class="count"><?php echo number_format_i18n( $orders_count->{'wc-v-doroge'}, 0 );; ?></span>
-                </a>
             </li>
             <li>
                 <a href="<?php echo add_query_arg( array( 'order_status' => 'wc-processing' ), $orders_url ); ?>" style="color: <?php echo $order_data[2]['color']; ?>">

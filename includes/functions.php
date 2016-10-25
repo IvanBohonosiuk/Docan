@@ -62,11 +62,34 @@ function dokan_is_product_author( $product_id = 0 ) {
  */
 function dokan_is_store_page() {
     $custom_store_url = dokan_get_option( 'custom_store_url', 'dokan_general', 'store' );
+
     if ( get_query_var( $custom_store_url ) ) {
         return true;
     }
 
     return false;
+}
+
+/**
+ * Check if it's a Seller Dashboard page
+ *
+ * @since 2.4.9
+ *
+ * @return boolean
+ */
+function dokan_is_seller_dashboard() {
+    $page_id = dokan_get_option( 'dashboard', 'dokan_pages' );
+
+    if ( ! $page_id ) {
+        return false;
+    }
+
+    if ( $page_id == get_the_ID() ) {
+        return true;
+    }
+
+    return false;
+
 }
 
 /**
@@ -262,7 +285,7 @@ function dokan_author_total_sales( $seller_id ) {
 
         $sql = "SELECT SUM(order_total) as earnings
             FROM {$wpdb->prefix}dokan_orders as do LEFT JOIN {$wpdb->prefix}posts as p ON do.order_id = p.ID
-            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-v-doroge')";
+            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold')";
 
         $count = $wpdb->get_row( $wpdb->prepare( $sql, $seller_id ) );
         $earnings = $count->earnings;
@@ -299,7 +322,7 @@ function dokan_generate_sync_table() {
 
     if ( $orders ) {
         foreach ($orders as $order) {
-            $percentage = dokan_get_seller_percentage( $order->seller_id );
+            $admin_commission   = dokan_get_admin_commission_by( $order, $order->seller_id );
 
             $wpdb->insert(
                 $table_name,
@@ -307,7 +330,7 @@ function dokan_generate_sync_table() {
                     'order_id'     => $order->order_id,
                     'seller_id'    => $order->seller_id,
                     'order_total'  => $order->order_total,
-                    'net_amount'   => ($order->order_total * $percentage)/100,
+                    'net_amount'   => $order_total - $admin_commission,
                     'order_status' => $order->order_status,
                 ),
                 array(
@@ -330,14 +353,20 @@ if ( !function_exists( 'dokan_get_seller_percentage' ) ) :
  * @param int $seller_id
  * @return int
  */
-function dokan_get_seller_percentage( $seller_id = 0 ) {
-    $global_percentage = (int) dokan_get_option( 'seller_percentage', 'dokan_selling', '90' );
+function dokan_get_seller_percentage( $seller_id = 0, $product_id = 0 ) {
+    if ( $product_id ) {
+        $_per_product_commission = get_post_meta( $product_id, '_per_product_commission', true );
+        if ( $_per_product_commission ) {
+            return (float) $_per_product_commission;
+        }
+    }
+    $global_percentage = (float) dokan_get_option( 'seller_percentage', 'dokan_selling', '90' );
 
     if ( ! $seller_id ) {
         return $global_percentage;
     }
 
-    $seller_percentage = (int) get_user_meta( $seller_id, 'dokan_seller_percentage', true );
+    $seller_percentage = (float) get_user_meta( $seller_id, 'dokan_seller_percentage', true );
     if ( $seller_percentage ) {
         return $seller_percentage;
     }
@@ -383,7 +412,7 @@ function dokan_get_client_ip() {
     else if ( getenv( 'HTTP_FORWARDED_FOR' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
     else if ( getenv( 'HTTP_X_CLUSTER_CLIENT_IP' ) )
-        $ipaddress = getenv( 'HTTP_X_CLUSTER_CLIENT_IP' );
+        $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
     else if ( getenv( 'HTTP_FORWARDED' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED' );
     else if ( getenv( 'REMOTE_ADDR' ) )
@@ -868,8 +897,10 @@ function dokan_is_seller_trusted( $user_id ) {
  */
 function dokan_get_store_url( $user_id ) {
     $userdata = get_userdata( $user_id );
+    $user_nicename = ( !false == $userdata ) ? $userdata->user_nicename : '';
+    
     $custom_store_url = dokan_get_option( 'custom_store_url', 'dokan_general', 'store' );
-    return sprintf( '%s/%s/', home_url( '/' . $custom_store_url ), $userdata->user_nicename );
+    return sprintf( '%s/%s/', home_url( '/' . $custom_store_url ), $user_nicename );
 }
 
 /**
@@ -1027,15 +1058,16 @@ function dokan_get_seller_bank_details( $seller_id ) {
 /**
  * Get seller listing
  *
- * @param int $number
- * @param int $offset
+ * @param array $args
+ *
  * @return array
  */
-function dokan_get_sellers( $number = 10, $offset = 0 ) {
-    $args = apply_filters( 'dokan_seller_list_query', array(
-        'role' => 'seller',
-        'number'     => $number,
-        'offset'     => $offset,
+function dokan_get_sellers( $args = array() ) {
+
+    $defaults = array(
+        'role'       => 'seller',
+        'number'     => 10,
+        'offset'     => 0,
         'orderby'    => 'registered',
         'order'      => 'ASC',
         'meta_query' => array(
@@ -1045,11 +1077,11 @@ function dokan_get_sellers( $number = 10, $offset = 0 ) {
                 'compare' => '='
             )
         )
-    ) );
+    );
+
+    $args = wp_parse_args( $args, $defaults );
 
     $user_query = new WP_User_Query( $args );
-
-
     $sellers    = $user_query->get_results();
 
     return array( 'users' => $sellers, 'count' => $user_query->total_users );
@@ -1437,22 +1469,28 @@ function dokan_get_processing_time_value( $index ) {
  *
  * @param string  $admin_email
  * @param WC_Order $order
+ *
  * @return array
  */
-function dokan_wc_email_recipient_add_seller( $admin_email, $order ) {
-    $emails = array( $admin_email );
+function dokan_wc_email_recipient_add_seller( $email, $order ) {
 
-    $seller_id = dokan_get_seller_id_by_order( $order->id );
+    if ( $order ) {
 
-    if ( $seller_id ) {
-        $seller_email = get_user_by( 'id', $seller_id )->user_email;
+        $sellers = dokan_get_seller_id_by_order( $order->id );
 
-        if ( $admin_email != $seller_email ) {
-            array_push( $emails, $seller_email );
+        if ( $sellers ) {
+            foreach ( $sellers as $seller_id) {
+                $seller = get_userdata( $seller_id );
+                $seller_email = $seller->user_email;
+
+                if ( $email != $seller_email ) {
+                    $email .= ',' . $seller_email;
+                }
+            }
         }
     }
 
-    return $emails;
+    return $email;
 }
 
 add_filter( 'woocommerce_email_recipient_new_order', 'dokan_wc_email_recipient_add_seller', 10, 2 );
@@ -1588,7 +1626,7 @@ function dokan_product_listing_filter() {
 function dokan_product_search_by_sku( $where ) {
     global $pagenow, $wpdb, $wp;
 
-    if ( !isset( $_GET['product_search_name'] ) || empty( $_GET['product_search_name'] ) || ! isset( $_POST['dokan_product_search_nonce'] ) || ! wp_verify_nonce( $_POST['dokan_product_search_nonce'], 'dokan_product_search' ) ) {
+    if ( !isset( $_GET['product_search_name'] ) || empty( $_GET['product_search_name'] ) || ! isset( $_GET['dokan_product_search_nonce'] ) || ! wp_verify_nonce( $_GET['dokan_product_search_nonce'], 'dokan_product_search' ) ) {
         return $where;
     }
 
@@ -1795,19 +1833,6 @@ function dokan_get_toc_url( $store_id ) {
 }
 
 /**
- * Save Redirect URL
- *
- * @since 2.4
- *
- * @return void [save redirect_url in session]
- */
-function dokan_save_redirect_url(){
-    $_SESSION['dokan_redirect_url'] = wp_get_referer();
-}
-
-add_action( 'woocommerce_login_form_start', 'dokan_save_redirect_url');
-
-/**
  * Login Redirect
  *
  * @since 2.4
@@ -1826,8 +1851,9 @@ function dokan_after_login_redirect( $redirect_to, $user ) {
             $redirect_to = get_permalink( $seller_dashboard );
         }
     }
-    elseif ( isset( $_SESSION['dokan_redirect_url'] ) ) {
-        $redirect_to = $_SESSION['dokan_redirect_url'];
+
+    if ( isset( $_GET['redirect_to'] ) && !empty( $_GET['redirect_to'] ) ) {
+        $redirect_to = esc_url( $_GET['redirect_to'] );
     }
 
     return $redirect_to;

@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Dokan - Multi-vendor Marketplace
+Plugin Name: Dokan - Multi-vendor Marketplace | JOJOThemes.com
 Plugin URI: https://wedevs.com/products/plugins/dokan/
 Description: An e-commerce marketplace plugin for WordPress. Powered by WooCommerce and weDevs.
-Version: 12.4.8
+Version: 2.4.12
 Author: weDevs
 Author URI: http://wedevs.com/
 License: GPL2
@@ -43,7 +43,7 @@ if ( !defined( '__DIR__' ) ) {
     define( '__DIR__', dirname( __FILE__ ) );
 }
 
-define( 'DOKAN_PLUGIN_VERSION', '12.4.8' );
+define( 'DOKAN_PLUGIN_VERSION', '2.4.12' );
 define( 'DOKAN_FILE', __FILE__ );
 define( 'DOKAN_DIR', __DIR__ );
 define( 'DOKAN_INC_DIR', __DIR__ . '/includes' );
@@ -185,6 +185,7 @@ final class WeDevs_Dokan {
         $wpdb->dokan_withdraw     = $wpdb->prefix . 'dokan_withdraw';
         $wpdb->dokan_orders       = $wpdb->prefix . 'dokan_orders';
         $wpdb->dokan_announcement = $wpdb->prefix . 'dokan_announcement';
+        $wpdb->dokan_refund       = $wpdb->prefix . 'dokan_refund';
 
         require_once __DIR__ . '/includes/functions.php';
 
@@ -253,6 +254,10 @@ final class WeDevs_Dokan {
 
         wp_register_script( 'dokan-script', plugins_url( 'assets/js/all.js', __FILE__ ), false, null, true );
         wp_register_script( 'dokan-product-shipping', plugins_url( 'assets/js/single-product-shipping.js', __FILE__ ), false, null, true );
+
+        if ( $this->is_pro() ) {
+            wp_register_script( 'accounting', WC()->plugin_url() . '/assets/js/accounting/accounting' . $suffix . '.js', array( 'jquery' ), '0.3.2' );
+        }
     }
 
     /**
@@ -328,6 +333,29 @@ final class WeDevs_Dokan {
 
         wp_localize_script( 'form-validate', 'DokanValidateMsg', $form_validate_messages );
 
+        if ( $this->is_pro() ) {
+            $dokan_refund = array(
+                'mon_decimal_point'             => wc_get_price_decimal_separator(),
+                'remove_item_notice'            => __( 'Are you sure you want to remove the selected items? If you have previously reduced this item\'s stock, or this order was submitted by a customer, you will need to manually restore the item\'s stock.', 'dokan' ),
+                'i18n_select_items'             => __( 'Please select some items.', 'dokan' ),
+                'i18n_do_refund'                => __( 'Are you sure you wish to process this refund request? This action cannot be undone.', 'dokan' ),
+                'i18n_delete_refund'            => __( 'Are you sure you wish to delete this refund? This action cannot be undone.', 'dokan' ),
+                'remove_item_meta'              => __( 'Remove this item meta?', 'dokan' ),
+                'ajax_url'                      => admin_url( 'admin-ajax.php' ),
+                'order_item_nonce'              => wp_create_nonce( 'order-item' ),
+                'post_id'                       => isset( $_GET['order_id'] ) ? $_GET['order_id'] : '',
+                'currency_format_num_decimals'  => wc_get_price_decimals(),
+                'currency_format_symbol'        => get_woocommerce_currency_symbol(),
+                'currency_format_decimal_sep'   => esc_attr( wc_get_price_decimal_separator() ),
+                'currency_format_thousand_sep'  => esc_attr( wc_get_price_thousand_separator() ),
+                'currency_format'               => esc_attr( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
+                'rounding_precision'            => wc_get_rounding_precision(),
+            );
+
+            wp_localize_script( 'dokan-script', 'dokan_refund', $dokan_refund );
+            wp_enqueue_script( 'accounting' );
+        }
+
         // load only in dokan dashboard and edit page
         if ( is_page( $page_id ) || ( get_query_var( 'edit' ) && is_singular( 'product' ) ) ) {
 
@@ -338,9 +366,15 @@ final class WeDevs_Dokan {
                 wp_enqueue_style( 'dokan-extra' );
                 wp_enqueue_style( 'dokan-style' );
                 wp_enqueue_style( 'dokan-magnific-popup' );
+                wp_enqueue_style( 'woocommerce-general' );
             }
 
             if ( DOKAN_LOAD_SCRIPTS ) {
+
+                $scheme       = is_ssl() ? 'https' : 'http';
+                $api_key      = dokan_get_option( 'gmap_api_key', 'dokan_general' );
+
+                wp_enqueue_script( 'google-maps', $scheme . '://maps.google.com/maps/api/js?key=' . $api_key );
 
                 wp_enqueue_script( 'jquery' );
                 wp_enqueue_script( 'jquery-ui' );
@@ -357,6 +391,7 @@ final class WeDevs_Dokan {
                 wp_enqueue_script( 'chosen' );
                 wp_enqueue_media();
                 wp_enqueue_script( 'dokan-popup' );
+                wp_enqueue_script( 'wc-password-strength-meter' );
 
                 wp_enqueue_script( 'dokan-script' );
                 wp_localize_script( 'jquery', 'dokan', $localize_script );
@@ -372,8 +407,12 @@ final class WeDevs_Dokan {
                 wp_enqueue_style( 'dokan-style' );
             }
 
-
             if ( DOKAN_LOAD_SCRIPTS ) {
+                $scheme       = is_ssl() ? 'https' : 'http';
+                $api_key      = dokan_get_option( 'gmap_api_key', 'dokan_general' );
+
+                wp_enqueue_script( 'google-maps', $scheme . '://maps.google.com/maps/api/js?key=' . $api_key );
+
                 wp_enqueue_script( 'jquery-ui-sortable' );
                 wp_enqueue_script( 'jquery-ui-datepicker' );
                 wp_enqueue_script( 'bootstrap-tooltip' );
@@ -414,10 +453,10 @@ final class WeDevs_Dokan {
         require_once $inc_dir . 'widgets/menu-category.php';
         require_once $inc_dir . 'widgets/store-menu-category.php';
         require_once $inc_dir . 'widgets/bestselling-product.php';
-        require_once $inc_dir . 'widgets/no-stock-product.php';
         require_once $inc_dir . 'widgets/top-rated-product.php';
         require_once $inc_dir . 'widgets/store-menu.php';
         require_once $inc_dir . 'wc-functions.php';
+        require_once $lib_dir . 'class-wedevs-insights.php';
 
         // Load free or pro moduels
         if ( file_exists( DOKAN_INC_DIR . '/pro/dokan-pro-loader.php' ) ) {
@@ -507,6 +546,7 @@ final class WeDevs_Dokan {
         }
 
         new Dokan_Rewrites();
+        new Dokan_Tracker();
         Dokan_Email::init();
 
         if ( is_user_logged_in() ) {
@@ -581,6 +621,28 @@ final class WeDevs_Dokan {
      */
     function admin_enqueue_scripts() {
         wp_enqueue_script( 'dokan_slider_admin', DOKAN_PLUGIN_ASSEST.'/js/admin.js', array( 'jquery' ) );
+
+        if ( $this->is_pro() ) {
+            $dokan_refund = array(
+                'mon_decimal_point'             => wc_get_price_decimal_separator(),
+                'remove_item_notice'            => __( 'Are you sure you want to remove the selected items? If you have previously reduced this item\'s stock, or this order was submitted by a customer, you will need to manually restore the item\'s stock.', 'dokan' ),
+                'i18n_select_items'             => __( 'Please select some items.', 'dokan' ),
+                'i18n_do_refund'                => __( 'Are you sure you wish to process this refund request? This action cannot be undone.', 'dokan' ),
+                'i18n_delete_refund'            => __( 'Are you sure you wish to delete this refund? This action cannot be undone.', 'dokan' ),
+                'remove_item_meta'              => __( 'Remove this item meta?', 'dokan' ),
+                'ajax_url'                      => admin_url( 'admin-ajax.php' ),
+                'order_item_nonce'              => wp_create_nonce( 'order-item' ),
+                'post_id'                       => isset( $_GET['order_id'] ) ? $_GET['order_id'] : '',
+                'currency_format_num_decimals'  => wc_get_price_decimals(),
+                'currency_format_symbol'        => get_woocommerce_currency_symbol(),
+                'currency_format_decimal_sep'   => esc_attr( wc_get_price_decimal_separator() ),
+                'currency_format_thousand_sep'  => esc_attr( wc_get_price_thousand_separator() ),
+                'currency_format'               => esc_attr( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS
+                'rounding_precision'            => wc_get_rounding_precision(),
+            );
+
+            wp_localize_script( 'dokan_slider_admin', 'dokan_refund', $dokan_refund );
+        }
     }
 
     /**

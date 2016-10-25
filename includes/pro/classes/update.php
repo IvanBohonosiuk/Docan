@@ -87,7 +87,7 @@ class Dokan_Update {
      * @return void
      */
     function license_check_notice() {
-        if ( $key = $this->get_license_key() ) {
+        if ( !$key = $this->get_license_key() ) {
             return;
         }
 
@@ -321,15 +321,15 @@ class Dokan_Update {
     function plugin_update() {
         $errors = array();
         if ( isset( $_POST['submit'] ) ) {
-            // if ( empty( $_POST['email'] ) ) {
-            //     $errors[] = __( 'Empty email address', 'dokan' );
-            // }
+            if ( empty( $_POST['email'] ) ) {
+                $errors[] = __( 'Empty email address', 'dokan' );
+            }
 
-            // if ( empty( $_POST['license_key'] ) ) {
-            //     $errors[] = __( 'Empty license key', 'dokan' );
-            // }
+            if ( empty( $_POST['license_key'] ) ) {
+                $errors[] = __( 'Empty license key', 'dokan' );
+            }
 
-            if ( $errors ) {
+            if ( !$errors ) {
                 update_option( self::option, array('email' => $_POST['email'], 'key' => $_POST['license_key']) );
                 delete_transient( self::option );
 

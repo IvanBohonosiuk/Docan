@@ -101,7 +101,7 @@
                                     <div class="dokan-form-group">
 
                                         <?php
-                                        wp_dropdown_categories( array(
+                                        $category_args =  array(
                                             'show_option_none' => __( '- Select a category -', 'dokan' ),
                                             'hierarchical'     => 1,
                                             'hide_empty'       => 0,
@@ -112,7 +112,9 @@
                                             'class'            => 'product_cat dokan-form-control chosen',
                                             'exclude'          => '',
                                             'selected'         => Dokan_Template_Products::$product_cat,
-                                        ) );
+                                        );
+
+                                        wp_dropdown_categories( apply_filters( 'dokan_product_cat_dropdown_args', $category_args ) );
                                         ?>
                                     </div>
                                 <?php elseif ( dokan_get_option( 'product_category_style', 'dokan_selling', 'single' ) == 'multiple' ): ?>
@@ -153,7 +155,7 @@
                                         'echo'             => 0
                                     ) );
 
-                                    echo str_replace( '<select', '<select data-placeholder="Select product tags" multiple="multiple" ', $drop_down_tags );
+                                    echo str_replace( '<select', '<select data-placeholder="' . __( 'Select product tags', 'dokan' ) . ' " multiple="multiple" ', $drop_down_tags );
                                     ?>
                                 </div>
 

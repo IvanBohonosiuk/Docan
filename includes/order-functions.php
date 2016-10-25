@@ -103,7 +103,7 @@ function dokan_count_orders( $user_id ) {
     $counts = wp_cache_get( $cache_key, 'dokan' );
 
     if ( $counts === false ) {
-        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0,'wc-v-doroge' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
+        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
 
         $sql = "SELECT do.order_status
                 FROM {$wpdb->prefix}dokan_orders AS do
@@ -227,6 +227,19 @@ function dokan_delete_sync_order( $order_id ) {
     $wpdb->delete( $wpdb->prefix . 'dokan_orders', array( 'order_id' => $order_id ) );
 }
 
+/**
+ * Delete a order row from sync table to not insert duplicate
+ *
+ * @global object $wpdb
+ * @param type $order_id, $seller_id
+ *
+ * @since  2.4.11
+ */
+function dokan_delete_sync_duplicate_order( $order_id, $seller_id ) {
+    global $wpdb;
+
+    $wpdb->delete( $wpdb->prefix . 'dokan_orders', array( 'order_id' => $order_id, 'seller_id' => $seller_id ) );
+}
 
 /**
  * Insert a order in sync table once a order is created
@@ -241,19 +254,15 @@ function dokan_sync_insert_order( $order_id ) {
         return;
     }
 
-    $order          = new WC_Order( $order_id );
-    $seller_id      = dokan_get_seller_id_by_order( $order_id );
-    $percentage     = dokan_get_seller_percentage( $seller_id );
+    $order              = new WC_Order( $order_id );
+    $seller_id          = dokan_get_seller_id_by_order( $order_id );
+    $order_total        = $order->get_total();
+    $order_status       = $order->post_status;
+    $admin_commission   = dokan_get_admin_commission_by( $order, $seller_id );
+    $net_amount         = $order_total - $admin_commission;
+    $net_amount         = apply_filters( 'dokan_order_net_amount', $net_amount, $order );
 
-    $order_total    = $order->get_total();
-    $order_shipping = $order->get_total_shipping();
-    $order_tax      = $order->get_total_tax();
-    $extra_cost     = $order_shipping + $order_tax;
-    $order_cost     = $order_total - $extra_cost;
-    $order_status   = $order->post_status;
-
-    $net_amount     = ( ( $order_cost * $percentage ) / 100 ) + $extra_cost;
-    $net_amount     = apply_filters( 'dokan_order_net_amount', $net_amount, $order );
+    dokan_delete_sync_duplicate_order( $order_id, $seller_id );
 
     $wpdb->insert( $wpdb->prefix . 'dokan_orders',
         array(
@@ -298,10 +307,16 @@ function dokan_get_seller_id_by_order( $order_id ) {
 
     $sellers = $wpdb->get_results( $wpdb->prepare( $sql, $order_id ) );
 
-    if ( count( $sellers ) == 1 ) {
+    if ( count( $sellers ) > 1 ) {
+        foreach ( $sellers as $seller ) {
+            $seller_id[] = (int) $seller->seller_id;
+        }
+
+        return $seller_id;
+        
+    } else if ( count( $sellers ) == 1 ) {
         return (int) reset( $sellers )->seller_id;
     }
-
     return 0;
 }
 
@@ -329,11 +344,6 @@ function dokan_get_order_status_class( $status ) {
             return 'warning';
             break;
 
-        case 'v-doroge':
-        case 'wc-v-doroge':
-            return 'info';
-            break;
-
         case 'processing':
         case 'wc-processing':
             return 'info';
@@ -355,6 +365,53 @@ function dokan_get_order_status_class( $status ) {
             break;
     }
 }
+
+
+/**
+ * Get translated string of order status
+ *
+ * @param string $status
+ * @return string
+ */
+function dokan_get_order_status_translated( $status ) {
+    switch ($status) {
+        case 'completed':
+        case 'wc-completed':
+            return __( 'Completed', 'dokan' );
+            break;
+
+        case 'pending':
+        case 'wc-pending':
+            return __( 'Pending Payment', 'dokan' );
+            break;
+
+        case 'on-hold':
+        case 'wc-on-hold':
+            return __( 'On-hold', 'dokan' );
+            break;
+
+        case 'processing':
+        case 'wc-processing':
+            return __( 'Processing', 'dokan' );
+            break;
+
+        case 'refunded':
+        case 'wc-refunded':
+            return __( 'Refunded', 'dokan' );
+            break;
+
+        case 'cancelled':
+        case 'wc-cancelled':
+            return __( 'Cancelled', 'dokan' );
+            break;
+
+        case 'failed':
+        case 'wc-failed':
+            return __( 'Failed', 'dokan' );
+            break;
+    }
+}
+
 
 /**
  * Get product items list from order
@@ -391,40 +448,16 @@ function dokan_sync_order_table( $order_id ) {
     global $wpdb;
 
     $order          = new WC_Order( $order_id );
-
     $seller_id      = dokan_get_seller_id_by_order( $order_id );
-    $percentage     = dokan_get_seller_percentage( $seller_id );
-    //Total calculation
-
     $order_total    = $order->get_total();
 
-    if ( $total_refunded = $order->get_total_refunded() ) {
-        $order_total = $order_total - $total_refunded;
+    if ( $order->get_total_refunded() ) {
+        $order_total = $order_total - $order->get_total_refunded();
     }
 
-    //Shipping calculation
-    $order_shipping = $order->get_total_shipping();
-
-    foreach ( $order->get_items() as $item ) {
-        $total_shipping_refunded = 0;
-        if ( $shipping_refunded = $order->get_total_refunded_for_item( $item['product_id'], 'shipping' ) ) {
-            $total_shipping_refunded += $shipping_refunded;
-        }
-    }
-
-    $order_shipping = $order_shipping - $total_shipping_refunded;
-
-    //Tax calculation
-    $order_tax      = $order->get_total_tax();
-
-    if ( $tax_refunded = $order->get_total_tax_refunded() ) {
-        $order_tax = $order_tax - $tax_refunded;
-    }
-
-    $extra_cost     = $order_shipping + $order_tax;
-    $order_cost     = $order_total - $extra_cost;
     $order_status   = $order->post_status;
-    $net_amount     = ( ( $order_cost * $percentage ) / 100 ) + $extra_cost;
+    $admin_commission   = dokan_get_admin_commission_by( $order, $seller_id );
+    $net_amount         = $order_total - $admin_commission;
     $net_amount     = apply_filters( 'dokan_sync_order_net_amount', $net_amount, $order );
 
     $wpdb->insert( $wpdb->prefix . 'dokan_orders',
@@ -444,6 +477,84 @@ function dokan_sync_order_table( $order_id ) {
         )
     );
 }
+
+/**
+ * Insert a order in sync table once a refund is created
+ *
+ * @global object $wpdb
+ * @param int $order_id
+ * @since 2.4.11
+ */
+function dokan_sync_refund_order( $order_id, $refund_id ) {
+    global $wpdb;
+
+    $order          = new WC_Order( $order_id );
+    $seller_id      = dokan_get_seller_id_by_order( $order_id );
+    $order_total    = $order->get_total();
+
+    if ( $order->get_total_refunded() ) {
+        $order_total = $order_total - $order->get_total_refunded();
+    }
+
+    $order_status   = $order->post_status;
+    $admin_commission   = dokan_get_admin_commission_by( $order, $seller_id );
+    $net_amount         = $order_total - $admin_commission;
+    $net_amount     = apply_filters( 'dokan_order_refunded_net_amount', $net_amount, $order );
+
+    $wpdb->update( $wpdb->prefix . 'dokan_orders',
+        array(
+            'order_total'  => $order_total,
+            'net_amount'   => $net_amount,
+            'order_status' => $order_status,
+        ),
+        array(
+            'order_id'     => $order_id
+        ),
+        array(
+            '%f',
+            '%f',
+            '%s',
+        )
+    );
+    update_post_meta( $order_id, 'dokan_refund_processing_id', $refund_id );
+}
+add_action( 'woocommerce_order_refunded', 'dokan_sync_refund_order', 10, 2 );
+
+
+/**
+ * Insert a order in sync table once a refund is deleted
+ *
+ * @global object $wpdb
+ * @param int $order_id
+ * @since 2.4.11
+ */
+function dokan_delete_refund_order( $refund_id, $order_id ) {
+    dokan_sync_refund_order( $order_id, $refund_id );
+    delete_post_meta( $order_id, 'dokan_refund_processing_id' );
+}
+add_action( 'woocommerce_refund_deleted', 'dokan_delete_refund_order', 10, 2 );
+
+
+/**
+ * Get if an order is a sub order or not
+ *
+ * @since 2.4.11
+ *
+ * @param int $order_id
+ *
+ * @return boolean
+ */
+function dokan_is_sub_order( $order_id ) {
+    $parent_order_id =  wp_get_post_parent_id( $order_id );
+    if ( 0 != $parent_order_id ) {
+        return true;
+    } else {
+        return false;
+    }
+    
+}
+
+
 /**
  * Get toal number of orders in Dokan order table
  *
@@ -483,6 +594,23 @@ function dokan_get_sellers_by( $order_id ) {
 }
 
 /**
+ * Return unique array of seller_ids from an order
+ * 
+ * @since 2.4.9
+ * 
+ * @param type $order_id
+ * 
+ * @return array $seller_ids
+ */
+function dokan_get_seller_ids_by( $order_id ) {
+
+    $sellers = dokan_get_sellers_by( $order_id );
+
+    return array_unique( array_keys( $sellers ) );
+
+}
+
+/**
  * 
  * @global object $wpdb
  * @param type $parent_order_id
@@ -504,4 +632,48 @@ function dokan_get_suborder_ids_by ($parent_order_id){
     
     return $sub_orders;
 
+}
+
+/**
+ * Return admin commisson from an order
+ * 
+ * @since 2.4.12
+ * 
+ * @param object $order
+ * 
+ * @return float $commission
+ */
+function dokan_get_admin_commission_by( $order, $seller_id ) {
+
+    if ( get_posts( array( 'post_parent' => $order->id, 'post_type' => 'shop_order' ) ) ) {
+        return;
+    }
+
+    $admin_commission = 0;
+    $refund_t = 0;
+    $commissions = array();
+    $i = 0;
+    $total_line = 0;
+
+    foreach ( $order->get_items() as $item_id => $item ) {
+
+        $refund_t += $order->get_total_refunded_for_item( $item_id );
+        $commissions[$i]['total_line'] = $item['line_total'] - $order->get_total_refunded_for_item( $item_id );
+        $commissions[$i]['admin_percentage'] = 100 - dokan_get_seller_percentage( $seller_id, $item['product_id'] );
+        $total_line += $commissions[$i]['total_line'];
+
+        $i++;
+
+    }
+
+    $refund_t += $order->get_total_tax_refunded() + $order->get_total_shipping_refunded();
+    $refund_ut = $order->get_total_refunded() - $refund_t;
+
+    foreach ( $commissions as $commission ) {
+
+        $commission['ut_amount'] = $refund_ut * ( $commission['total_line'] / $total_line );
+        $admin_commission += ( $commission['total_line'] + $commission['ut_amount'] ) * $commission['admin_percentage'] /100;
+    }
+    
+    return apply_filters( 'dokan_order_admin_commission', $admin_commission, $order );
 }

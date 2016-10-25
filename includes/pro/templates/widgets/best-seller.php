@@ -19,13 +19,10 @@
             $display_rating = $rating['rating'];
 
             if ( ! $rating['count'] ) {
-                $display_rating = __( 'Нет оценок!', 'dokan' );
+                $display_rating = __( 'No ratings found yet!', 'dokan' );
             }
             ?>
             <li>
-                <a href="<?php echo dokan_get_store_url( $value->seller_id ); ?>" class="seller_img">
-                    <?php echo get_avatar( $value->seller_id, 200 ); ?>
-                </a>
                 <a href="<?php echo dokan_get_store_url( $value->seller_id ); ?>">
                     <?php echo esc_html( $store_info['store_name'] ); ?>
                 </a><br />
@@ -36,7 +33,7 @@
         }
     } else {
         ?>
-        <p><?php _e( 'Лучших продавцов не найдено', 'dokan' ); ?></p>
+        <p><?php _e( 'No best seller found', 'dokan' ); ?></p>
         <?php
     }
     ?>

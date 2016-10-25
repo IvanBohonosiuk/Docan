@@ -111,7 +111,7 @@ function dokan_get_order_report_data( $args = array(), $start_date, $end_date ) 
         WHERE   posts.post_type     = 'shop_order'
         AND     posts.post_status   != 'trash'
         AND     do.seller_id = {$current_user->ID}
-        AND     do.order_status IN ('" . implode( "','", apply_filters( 'woocommerce_reports_order_statuses', array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-v-doroge' ) ) ) . "')
+        AND     do.order_status IN ('" . implode( "','", apply_filters( 'woocommerce_reports_order_statuses', array( 'wc-completed', 'wc-processing', 'wc-on-hold' ) ) ) . "')
         ";
 
     if ( $filter_range ) {
@@ -212,7 +212,6 @@ function dokan_get_order_report_data( $args = array(), $start_date, $end_date ) 
     $query_hash = md5( $query_type . $query );
 
     if ( $debug ) {
-        // var_dump( $query );
         printf( '<pre>%s</pre>', print_r( $query, true ) );
     }
 
@@ -334,7 +333,7 @@ function dokan_sales_overview_chart_data( $start_date, $end_date, $group_by ) {
             var order_data = jQuery.parseJSON( '<?php echo $chart_data; ?>' );
             var series = [
                 {
-                    label: "<?php echo esc_js( __( 'Number of items sold', 'dokan' ) ) ?>",
+                    label: "<?php echo esc_js( __( 'Sales total', 'dokan' ) ) ?>",
                     data: order_data.order_amounts,
                     shadowSize: 0,
                     hoverable: true,

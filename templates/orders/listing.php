@@ -32,10 +32,10 @@ if ( $user_orders ) {
                         <?php echo '<a href="' . wp_nonce_url( add_query_arg( array( 'order_id' => $the_order->id ), dokan_get_navigation_url( 'orders' ) ), 'dokan_view_order' ) . '"><strong>' . sprintf( __( 'Order %s', 'dokan' ), esc_attr( $the_order->get_order_number() ) ) . '</strong></a>'; ?>
                     </td>
                     <td class="dokan-order-total">
-                        <?php echo esc_html( strip_tags( $the_order->get_formatted_order_total() ) ); ?>
+                        <?php echo $the_order->get_formatted_order_total(); ?>
                     </td>
                     <td class="dokan-order-status">
-                        <?php printf( __('<span class="dokan-label dokan-label-%s">%s</span>', 'dokan' ), dokan_get_order_status_class( $the_order->status ), esc_html__( $the_order->status ) ); ?>
+                        <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class( $the_order->status ) . '">' . esc_html__( dokan_get_order_status_translated( $the_order->status ) ) . '</span>'; ?>
                     </td>
                     <td class="dokan-order-customer">
                         <?php
@@ -69,8 +69,8 @@ if ( $user_orders ) {
                         if ( '0000-00-00 00:00:00' == $the_order->order_date ) {
                             $t_time = $h_time = __( 'Unpublished', 'dokan' );
                         } else {
-                            $t_time = get_the_time( __( 'Y/m/d g:i:s A', 'dokan' ), $the_order );
-
+                            $t_time = get_the_time( __( 'Y/m/d g:i:s A', 'dokan' ), $the_order->id );
+                            
                             $gmt_time = strtotime( $the_order->order_date . ' UTC' );
                             $time_diff = current_time( 'timestamp', 1 ) - $gmt_time;
 
@@ -91,16 +91,7 @@ if ( $user_orders ) {
 
                         if ( dokan_get_option( 'order_status_change', 'dokan_selling', 'on' ) == 'on' ) {
 
-                            if ( in_array( $the_order->post_status, array( 'wc-processing', 'wc-on-hold', 'wc-pending' ) ) ) {
-                                 $actions['v-doroge'] = array(
-                                    'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-v-doroge&order_id=' . $the_order->id ), 'dokan-mark-order-v-doroge' ),
-                                    'name' => __( 'В дороге', 'dokan' ),
-                                    'action' => "v-doroge",
-                                    'icon' => '<i class="fa fa-truck">&nbsp;</i>'
-                                );
-                            }
-
-                            if ( in_array( $the_order->post_status, array( 'wc-pending', 'wc-on-hold' ) ) )
+                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold') ) )
                                 $actions['processing'] = array(
                                     'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-processing&order_id=' . $the_order->id ), 'dokan-mark-order-processing' ),
                                     'name' => __( 'Processing', 'dokan' ),
@@ -108,7 +99,7 @@ if ( $user_orders ) {
                                     'icon' => '<i class="fa fa-clock-o">&nbsp;</i>'
                                 );
 
-                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold', 'wc-v-doroge', 'wc-processing' ) ) )
+                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold', 'wc-processing') ) )
                                 $actions['complete'] = array(
                                     'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-complete&order_id=' . $the_order->id ), 'dokan-mark-order-complete' ),
                                     'name' => __( 'Complete', 'dokan' ),
@@ -116,9 +107,7 @@ if ( $user_orders ) {
                                     'icon' => '<i class="fa fa-check">&nbsp;</i>'
                                 );
 
-                        } 
-
-
+                        }
 
                         $actions['view'] = array(
                             'url' => wp_nonce_url( add_query_arg( array( 'order_id' => $the_order->id ), dokan_get_navigation_url( 'orders' ) ), 'dokan_view_order' ),

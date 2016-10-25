@@ -98,7 +98,6 @@ class Dokan_Template_Dashboard {
         $order_data = array(
             array( 'value' => $this->orders_count->{'wc-completed'}, 'color' => '#73a724' ),
             array( 'value' => $this->orders_count->{'wc-pending'}, 'color' => '#999' ),
-            array( 'value' => $this->orders_count->{'wc-v-doroge'}, 'color' => '#0C5779' ),
             array( 'value' => $this->orders_count->{'wc-processing'}, 'color' => '#21759b' ),
             array( 'value' => $this->orders_count->{'wc-cancelled'}, 'color' => '#d54e21' ),
             array( 'value' => $this->orders_count->{'wc-refunded'}, 'color' => '#e6db55' ),
