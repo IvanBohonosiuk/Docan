@@ -480,8 +480,11 @@ function dokan_process_product_meta( $post_id ) {
     update_post_meta( $post_id, '_create_variation', 'no' );
 
     // Gallery Images
-    $attachment_ids = array_filter( explode( ',', woocommerce_clean( $_POST['product_image_gallery'] ) ) );
+    $attachment_ids = array_filter( explode( ',', wc_clean( $_POST['product_image_gallery'] ) ) );
     update_post_meta( $post_id, '_product_image_gallery', implode( ',', $attachment_ids ) );
+
+    $_POST['_visibility'] = isset( $_POST['_visibility'] ) ? $_POST['_visibility'] : '';
+    $_POST['_purchase_note'] = isset( $_POST['_purchase_note'] ) ? $_POST['_purchase_note'] : '';
 
     // Update post meta
     if ( isset( $_POST['_regular_price'] ) ) {
@@ -640,11 +643,11 @@ function dokan_process_product_meta( $post_id ) {
 
                     // Select based attributes - Format values (posted values are slugs)
                     if ( is_array( $attribute_values[ $i ] ) ) {
-                        $values = array_map( 'sanitize_title', $attribute_values[ $i ] );
+                        $values = $attribute_values[ $i ];
 
                     // Text based attributes - Posted values are term names - don't change to slugs
                     } else {
-                        $values = array_map( 'strip_tags', explode( '|', $attribute_values[ $i ] ) );
+                        $values = array_map( 'stripslashes', array_map( 'strip_tags', explode( '|', $attribute_values[ $i ] ) ) );
                     }
 
                     // Remove empty items in the array
@@ -1063,6 +1066,7 @@ function dokan_new_process_product_meta( $post_id ) {
     }
 
     // Unique SKU
+    $_POST['_sku'] = isset( $_POST['_sku'] ) ? $_POST['_sku'] : '';
     $sku     = get_post_meta($post_id, '_sku', true);
     $new_sku = wc_clean( stripslashes( $_POST['_sku'] ) );
     if ( $new_sku == '' ) {
@@ -1162,7 +1166,7 @@ function dokan_new_process_product_meta( $post_id ) {
                     $values = implode( ' | ', array_map( 'wc_clean', $attribute_values[$i] ) );
 
                     // Custom attribute - Add attribute to array and set the values
-                    $attributes[ sanitize_title( $attribute_names[ $i ] ) ] = array(
+                    $attributes[ $attribute_names[ $i ] ] = array(
                         'name'          => wc_clean( $attribute_names[ $i ] ),
                         'value'         => $values,
                         'position'      => $attribute_position[ $i ],
@@ -1268,6 +1272,7 @@ function dokan_new_process_product_meta( $post_id ) {
             update_post_meta( $post_id, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) );
         }
 
+        $_POST['_sale_price'] = isset( $_POST['_sale_price'] ) ? $_POST['_sale_price'] : '';
         // Update price if on sale
         if ( '' !== $_POST['_sale_price'] && '' == $date_to && '' == $date_from ) {
             update_post_meta( $post_id, '_price', wc_format_decimal( $_POST['_sale_price'] ) );
@@ -2873,6 +2878,7 @@ function dokan_user_update_to_seller( $user, $data ) {
     );
 
     update_user_meta( $user_id, 'dokan_profile_settings', $dokan_settings );
+    update_user_meta( $user_id, 'dokan_store_name', $dokan_settings['store_name'] );
 
 
     $publishing = dokan_get_option( 'product_status', 'dokan_selling' );

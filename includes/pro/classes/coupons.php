@@ -589,8 +589,9 @@ class Dokan_Pro_Coupons {
             'customer_email'    => $customer_email,
             'button_name'       => $button_name,
             'exclide_sale_item' => $exclide_sale_item,
+            'show_on_store'     => $show_on_store,
             'all_products'      => $this->coupon_products_list(),
-            'products_id'       => $products_id
+            'products_id'       => $products_id,
         ) );
     }
 }

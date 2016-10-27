@@ -1470,9 +1470,8 @@ function dokan_get_processing_time_value( $index ) {
  *
  * @return array
  */
-function dokan_wc_email_recipient_add_seller( $admin_email, $order ) {
-    $emails = array( $admin_email );
-
+function dokan_wc_email_recipient_add_seller( $email, $order ) {
+    
     if ( $order ) {
 
         $sellers = dokan_get_seller_id_by_order( $order->id );

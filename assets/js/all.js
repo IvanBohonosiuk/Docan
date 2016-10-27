@@ -364,7 +364,7 @@ jQuery(function($) {
                     var refund_cost_fields = $row.find( '.refund input:not(.refund_order_item_qty)' );
 
                     refund_cost_fields.each(function( index, el ) {
-                        refund_amount= parseFloat( accounting.unformat( $( el ).val() || 0, dokan_refund.mon_decimal_point ) );
+                        refund_amount += parseFloat( accounting.unformat( $( el ).val() || 0, dokan_refund.mon_decimal_point ) );
                     });
                 });
 
