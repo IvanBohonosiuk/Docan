@@ -14,7 +14,8 @@ $map_location = isset( $store_info['location'] ) ? esc_attr( $store_info['locati
 
 get_header( 'shop' );
 ?>
-    <?php do_action( 'woocommerce_before_main_content' ); ?>
+
+<?php do_action( 'woocommerce_before_main_content' ); ?>
 
     <?php if ( dokan_get_option( 'enable_theme_store_sidebar', 'dokan_general', 'off' ) == 'off' ) { ?>
         <div id="dokan-secondary" class="dokan-clearfix dokan-w3 dokan-store-sidebar" role="complementary" style="margin-right:3%;">
@@ -44,7 +45,6 @@ get_header( 'shop' );
 
                 }
                 ?>
-
                 <?php do_action( 'dokan_sidebar_store_after', $store_user, $store_info ); ?>
             </div>
         </div><!-- #secondary .widget-area -->
@@ -56,7 +56,7 @@ get_header( 'shop' );
 
     <div id="dokan-primary" class="dokan-single-store dokan-w8">
         <div id="dokan-content" class="store-page-wrap woocommerce" role="main">
-
+            
             <?php dokan_get_template_part( 'store-header' ); ?>
 
             <?php do_action( 'dokan_store_profile_frame_after', $store_user, $store_info ); ?>
@@ -70,7 +70,7 @@ get_header( 'shop' );
                         <?php while ( have_posts() ) : the_post(); ?>
 
                             <?php wc_get_template_part( 'content', 'product' ); ?>
-
+  
                         <?php endwhile; // end of the loop. ?>
 
                     <?php woocommerce_product_loop_end(); ?>
@@ -85,9 +85,7 @@ get_header( 'shop' );
 
             <?php } ?>
         </div>
-
     </div><!-- .dokan-single-store -->
-
     <?php do_action( 'woocommerce_after_main_content' ); ?>
-
-<?php get_footer( 'shop' ); ?>
+  
+<?php get_footer( 'shop' ); ?> 

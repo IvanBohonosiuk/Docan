@@ -347,5 +347,4 @@ class Dokan_Pro_Admin_Ajax {
         }
 
     }
-
 }

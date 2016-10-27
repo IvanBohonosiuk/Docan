@@ -213,6 +213,20 @@ function dokan_order_listing_status_filter() {
                 <?php printf( __( 'Processing (%d)', 'dokan' ), $orders_counts->{'wc-processing'} ); ?></span>
             </a>
         </li>
+        <li<?php echo $status_class == 'wc-v-doroge' ? ' class="active"' : ''; ?>>
+            <?php
+                if( $order_date ) {
+                    $date_filter = array(
+                        'order_date' => $order_date,
+                        'dokan_order_filter' => 'Filter',
+                    );
+                }
+                $shipping_order_url = array_merge( $date_filter, array( 'order_status' => 'wc-v-doroge' ) );
+            ?>
+            <a href="<?php echo add_query_arg( $shipping_order_url, $orders_url ); ?>">
+                <?php printf( __( 'В дороге (%d)', 'dokan' ), $orders_counts->{'wc-v-doroge'} ); ?></span>
+            </a>
+        </li>
         <li<?php echo $status_class == 'wc-on-hold' ? ' class="active"' : ''; ?>>
             <?php
                 if( $order_date ) {
@@ -292,7 +306,7 @@ function dokan_get_dashboard_nav() {
 
     $urls = array(
         'dashboard' => array(
-            'title' => __( 'Dashboard', 'dokan'),
+            'title' => __( 'Личный кабинет', 'dokan'),
             'icon'  => '<i class="fa fa-tachometer"></i>',
             'url'   => dokan_get_navigation_url(),
             'pos'   => 10
@@ -316,10 +330,16 @@ function dokan_get_dashboard_nav() {
             'url'   => dokan_get_navigation_url( 'withdraw' ),
             'pos'   => 70
         ),
+        // 'quit' => array(
+        //     'title' => __( 'Выйти', 'dokan'),
+        //     'icon'  => '<i class="fa fa-sign-out"></i>',
+        //     'url'   => home_url().'/my-account/customer-logout',
+        //     'pos'   => 70
+        // ),
     );
 
     $settings = array(
-        'title' => __( 'Settings <i class="fa fa-angle-right pull-right"></i>', 'dokan'),
+        'title' => __( 'Настройки <i class="fa fa-angle-right pull-right"></i>', 'dokan'),
         'icon'  => '<i class="fa fa-cog"></i>',
         'url'   => dokan_get_navigation_url( 'settings/store' ),
         'pos'   => 200,
@@ -333,19 +353,18 @@ function dokan_get_dashboard_nav() {
             'pos'   => 10
         ),
         'store' => array(
-            'title' => __( 'Store', 'dokan'),
+            'title' => __( 'Магазин', 'dokan'),
             'icon'  => '<i class="fa fa-university"></i>',
             'url'   => dokan_get_navigation_url( 'settings/store' ),
             'pos'   => 30
         ),
         'payment' => array(
-            'title' => __( 'Payment', 'dokan'),
+            'title' => __( 'Платежи', 'dokan'),
             'icon'  => '<i class="fa fa-credit-card"></i>',
             'url'   => dokan_get_navigation_url( 'settings/payment' ),
             'pos'   => 50
         )
     );
-
 
     /**
      * Filter to get the seller dashboard settings navigation.
@@ -554,7 +573,6 @@ function dokan_myorder_login_check(){
     }
 }
 
-
  /**
  * Displays the store lists
  *
@@ -568,20 +586,20 @@ function dokan_store_listing( $atts ) {
     global $post;
 
     /**
-     * Filter return the number of store listing number per page.
-     *
-     * @since 2.2
-     *
-     * @param array
-     */
+    * Filter return the number of store listing number per page.
+    *
+    * @since 2.2
+    *
+    * @param array
+    */
     $attr = shortcode_atts( apply_filters( 'dokan_store_listing_per_page', array(
         'per_page' => 10,
         'search'   => 'yes'
     ) ), $atts );
 
-    $paged   = max( 1, get_query_var( 'paged' ) );
-    $limit   = $attr['per_page'];
-    $offset  = ( $paged - 1 ) * $limit;
+    $paged  = max( 1, get_query_var( 'paged' ) );
+    $limit  = $attr['per_page'];
+    $offset = ( $paged - 1 ) * $limit;
 
     $seller_args = array(
         'number' => $limit,

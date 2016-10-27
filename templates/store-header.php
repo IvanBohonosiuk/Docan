@@ -26,16 +26,16 @@ $social_fields = dokan_get_social_profile_fields();
                     <li class="store-name"><?php echo esc_html( $store_info['store_name'] ); ?></li>
                 <?php } ?>
                 <?php if ( isset( $store_info['address'] ) && !empty( $store_info['address'] ) ) { ?>
-                    <li class="dokan-store-address"><i class="fa fa-map-marker"></i>
+                    <!-- <li class="dokan-store-address"><i class="fa fa-map-marker"></i>
                         <?php echo dokan_get_seller_address( $store_user->ID ); ?>
-                    </li>
+                    </li> -->
                 <?php } ?>
 
                 <?php if ( isset( $store_info['phone'] ) && !empty( $store_info['phone'] ) ) { ?>
-                    <li class="dokan-store-phone">
+                    <!-- <li class="dokan-store-phone">
                         <i class="fa fa-mobile"></i>
                         <a href="tel:<?php echo esc_html( $store_info['phone'] ); ?>"><?php echo esc_html( $store_info['phone'] ); ?></a>
-                    </li>
+                    </li> -->
                 <?php } ?>
 
                 <?php if ( isset( $store_info['show_email'] ) && $store_info['show_email'] == 'yes' ) { ?>
@@ -44,6 +44,8 @@ $social_fields = dokan_get_social_profile_fields();
                         <a href="mailto:<?php echo antispambot( $store_user->user_email ); ?>"><?php echo antispambot( $store_user->user_email ); ?></a>
                     </li>
                 <?php } ?>
+
+                <!-- <li><?php print_r($store_info); ?></li> -->
 
                 <li>
                     <i class="fa fa-star"></i>

@@ -474,7 +474,7 @@ class Dokan_Pro_Coupons {
             $exclide_sale_item = get_post_meta( $post->ID, 'exclude_sale_items', true );
             $minimum_amount    = get_post_meta( $post->ID, 'minimum_amount', true );
             $customer_email    = get_post_meta( $post->ID, 'customer_email', true );
-            $show_on_store = get_post_meta( $post->ID, 'show_on_store', true );
+            $show_on_store     = get_post_meta( $post->ID, 'show_on_store', true );
         }
 
         $post_id     = isset( $post->ID ) ? $post->ID : '';
@@ -589,9 +589,8 @@ class Dokan_Pro_Coupons {
             'customer_email'    => $customer_email,
             'button_name'       => $button_name,
             'exclide_sale_item' => $exclide_sale_item,
-            'show_on_store'     => $show_on_store,
             'all_products'      => $this->coupon_products_list(),
-            'products_id'       => $products_id,
+            'products_id'       => $products_id
         ) );
     }
 }

@@ -108,7 +108,7 @@ class Dokan_Email {
         $headers = array( "Reply-To: {$from_name}<{$from_email}>" );
 
         $this->send( $seller_email, $subject, $body, $headers );
-
+        
         do_action( 'dokan_contact_seller_email_sent', array(
             'to'           => $seller_email,
             'subject'      => $subject,
@@ -299,7 +299,7 @@ class Dokan_Email {
      * @param int $seller_id
      */
     function new_seller_registered_mail( $seller_id ) {
-
+        
         ob_start();
         dokan_get_template_part( 'emails/new-seller-registered' );
         $body = ob_get_clean();

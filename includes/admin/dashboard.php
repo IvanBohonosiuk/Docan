@@ -93,7 +93,7 @@ function dokan_admin_dash_metabox_glance() {
 ?>
 <div class="wrap dokan-dashboard">
 
-    <h2><?php _e( 'Dokan Dashboard | JOJOThemes.com', 'dokan' ); ?></h2> <img src="https://www.jojothemes.com/wp-content/uploads/2016/04/JOJOThemes-Mobile-Retina.png" height="50x" alt="JOJOThemes.com">
+     <h2><?php _e( 'Dokan Dashboard | JOJOThemes.com', 'dokan' ); ?></h2> <img src="https://www.jojothemes.com/wp-content/uploads/2016/04/JOJOThemes-Mobile-Retina.png" height="50x" alt="JOJOThemes.com">
 
     <div class="metabox-holder">
         <div class="post-box-container">

@@ -101,7 +101,7 @@
                                     <div class="dokan-form-group">
 
                                         <?php
-                                        $category_args =  array(
+                                        $category_args = array(
                                             'show_option_none' => __( '- Select a category -', 'dokan' ),
                                             'hierarchical'     => 1,
                                             'hide_empty'       => 0,

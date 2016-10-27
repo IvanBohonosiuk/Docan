@@ -17,6 +17,8 @@
     // Custom Attributes
     if ( ! empty( $attributes ) ) {
         foreach ( $attributes as $attribute ) {
+            // var_dump($attribute);
+
             if ( $attribute['is_taxonomy'] ) {
                 $tax = get_taxonomy( $attribute['name'] );
                 $attribute_name = $tax->labels->name;

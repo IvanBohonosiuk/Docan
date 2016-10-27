@@ -19,15 +19,18 @@
             $display_rating = $rating['rating'];
 
             if ( ! $rating['count'] ) {
-                $display_rating = __( 'No ratings found yet!', 'dokan' );
+                $display_rating = __( 'Нет оценок!', 'dokan' );
             }
             ?>
             <li>
+                <a href="<?php echo dokan_get_store_url( $seller->ID ); ?>" class="seller_img">
+                    <?php echo get_avatar( $seller->ID, 200 ); ?>
+                </a>
                 <a href="<?php echo dokan_get_store_url( $seller->ID ); ?>">
                     <?php echo esc_html( $store_info['store_name'] ); ?>
                 </a><br />
                 <i class='fa fa-star'></i>
-                <?php echo $display_rating; ?>
+                <?php echo $display_rating; ?><br />
             </li>
 
             <?php

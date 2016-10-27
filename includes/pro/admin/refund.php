@@ -1,7 +1,6 @@
 <?php
 $dokan_admin_refund = Dokan_Pro_Admin_refund::init();
 $counts = dokan_get_refund_count();
-
 $status = isset( $_GET['status'] ) ? $_GET['status'] : 'pending';
 ?>
 <div class="wrap">
@@ -26,7 +25,6 @@ $status = isset( $_GET['status'] ) ? $_GET['status'] : 'pending';
     </ul>
 
     <?php
-
     $dokan_admin_refund->admin_refund_list( $status );
     ?>
 </div>

@@ -285,7 +285,7 @@ function dokan_author_total_sales( $seller_id ) {
 
         $sql = "SELECT SUM(order_total) as earnings
             FROM {$wpdb->prefix}dokan_orders as do LEFT JOIN {$wpdb->prefix}posts as p ON do.order_id = p.ID
-            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold')";
+            WHERE seller_id = %d AND order_status IN('wc-completed', 'wc-processing', 'wc-on-hold', 'wc-v-doroge')";
 
         $count = $wpdb->get_row( $wpdb->prepare( $sql, $seller_id ) );
         $earnings = $count->earnings;
@@ -412,7 +412,7 @@ function dokan_get_client_ip() {
     else if ( getenv( 'HTTP_FORWARDED_FOR' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
     else if ( getenv( 'HTTP_X_CLUSTER_CLIENT_IP' ) )
-        $ipaddress = getenv( 'HTTP_FORWARDED_FOR' );
+        $ipaddress = getenv( 'HTTP_X_CLUSTER_CLIENT_IP' );
     else if ( getenv( 'HTTP_FORWARDED' ) )
         $ipaddress = getenv( 'HTTP_FORWARDED' );
     else if ( getenv( 'REMOTE_ADDR' ) )
@@ -897,8 +897,6 @@ function dokan_is_seller_trusted( $user_id ) {
  */
 function dokan_get_store_url( $user_id ) {
     $userdata = get_userdata( $user_id );
-    $user_nicename = ( !false == $userdata ) ? $userdata->user_nicename : '';
-    
     $custom_store_url = dokan_get_option( 'custom_store_url', 'dokan_general', 'store' );
     return sprintf( '%s/%s/', home_url( '/' . $custom_store_url ), $user_nicename );
 }
@@ -1059,7 +1057,7 @@ function dokan_get_seller_bank_details( $seller_id ) {
  * Get seller listing
  *
  * @param array $args
- *
+ * 
  * @return array
  */
 function dokan_get_sellers( $args = array() ) {
@@ -1472,7 +1470,8 @@ function dokan_get_processing_time_value( $index ) {
  *
  * @return array
  */
-function dokan_wc_email_recipient_add_seller( $email, $order ) {
+function dokan_wc_email_recipient_add_seller( $admin_email, $order ) {
+    $emails = array( $admin_email );
 
     if ( $order ) {
 

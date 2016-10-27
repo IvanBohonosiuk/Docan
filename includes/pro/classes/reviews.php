@@ -657,7 +657,7 @@ class Dokan_Pro_Reviews {
             $wpdb->posts.post_type='$post_type'"
         );
     }
-    
+
     function render_store_tab_comment_list( $comments, $store_id ) {
         
         ob_start();

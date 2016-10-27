@@ -3,22 +3,17 @@
 
     <?php
     $help_docs = get_transient( 'dokan_help_docs' );
-
     if ( false === $help_docs ) {
         $help_url  = 'https://api.bitbucket.org/2.0/snippets/wedevs/oErMz/files/dokan-help.json';
         $response  = wp_remote_get( $help_url, array('timeout' => 15) );
         $help_docs = wp_remote_retrieve_body( $response );
-
         if ( is_wp_error( $response ) || $response['response']['code'] != 200 ) {
             $help_docs = '[]';
         }
-
         set_transient( 'dokan_help_docs', $help_docs, 12 * HOUR_IN_SECONDS );
     }
-
     $help_docs    = json_decode( $help_docs );
     $sections     = count( $help_docs );
-
     if ( $sections ) {
         $left_column  = array_slice( $help_docs, 0, $sections / 2);
         $right_column = array_slice( $help_docs, $sections / 2);
@@ -98,20 +93,16 @@
     margin: 0;
     border-bottom: 1px solid #eee;
 }
-
 .dokan-help-questions li a {
     padding: 10px 15px;
     display: block;
 }
-
 .dokan-help-questions li a:hover {
     background-color: #F5F5F5;
 }
-
 .dokan-help-questions li:last-child {
     border-bottom: none;
 }
-
 .dokan-help-questions li .dashicons {
     float: right;
     color: #ccc;

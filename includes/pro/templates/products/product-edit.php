@@ -306,7 +306,7 @@ if ( ! $from_shortcode ) {
                                                         if ( $term ) {
                                                             $product_cat = reset( $term );
                                                         }
-                                                        
+
                                                         $category_args = array(
                                                             'show_option_none' => __( '- Select a category -', 'dokan' ),
                                                             'hierarchical'     => 1,

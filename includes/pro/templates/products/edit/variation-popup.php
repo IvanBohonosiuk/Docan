@@ -233,7 +233,7 @@
 
                                                     <label class="checkbox"><input type="checkbox" {{ ( !_.isUndefined( data._virtual ) && data._virtual == 'yes' ) ? 'checked="checked"': '' }} name="variable_is_virtual[]" class="checkbox variable_is_virtual"> <?php _e( 'Virtual' , 'dokan' ) ?> <a href="#" title="" class="tips" data-original-title="Enable this option if a product is not shipped or there is no shipping cost">[?]</a></label>
 
-                                                    <label class="checkbox"><input type="checkbox" {{ ( !_.isUndefined( data._manage_stock ) && data._manage_stock == 'yes' ) ? 'checked="checked"': '' }} name="variable_manage_stock[]" class="checkbox variable_manage_stock"> <?php _e( ' Manage Stock? ' , 'dokan' ) ?><a href="#" title="" class="tips" data-original-title="Enable this option to enable stock management at variation level">[?]</a></label>
+                                                    <label class="checkbox"><input type="checkbox" {{ ( !_.isUndefined( data._manage_stock ) && data._manage_stock == 'yes' ) ? 'checked="checked"': '' }} name="variable_manage_stock[]" class="checkbox variable_manage_stock"> <?php _e( ' Manage Stock? ' , 'dokan' ) ?> <a href="#" title="" class="tips" data-original-title="Enable this option to enable stock management at variation level">[?]</a></label>
                                                 </td>
                                             </tr>
                                         </tbody>

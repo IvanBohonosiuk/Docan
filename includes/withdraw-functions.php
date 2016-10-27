@@ -184,7 +184,7 @@ function dokan_get_withdraw_count() {
 
     if ( false === $counts ) {
 
-        $counts = array( 'pending' => 0, 'completed' => 0, 'cancelled' => 0 );
+        $counts = array( 'pending' => 0, 'completed' => 0, 'cancelled' => 0, 'v-doroge' => 0 );
         $sql = "SELECT COUNT(id) as count, status FROM {$wpdb->dokan_withdraw} GROUP BY status";
         $result = $wpdb->get_results( $sql );
 
@@ -196,6 +196,8 @@ function dokan_get_withdraw_count() {
                     $counts['completed'] = (int) $row->count;
                 } elseif ( $row->status == '2' ) {
                     $counts['cancelled'] = (int) $row->count;
+                } elseif ( $row->status == '3' ) {
+                    $counts['v-doroge'] = (int) $row->count;
                 }
             }
         }

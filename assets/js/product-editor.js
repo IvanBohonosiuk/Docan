@@ -112,7 +112,7 @@
             $('#_overwrite_shipping').trigger('change');
 
             this.loadTagIt();
-            
+
             $('body').on('submit', 'form.dokan-product-edit-form', this.inputValidate);            
             
         },
@@ -136,7 +136,7 @@
                 $( 'div.dokan-product-cat-alert' ).hide();
             }            
             $( 'input[type=submit]' ).attr( 'disabled', 'disabled' );
-            this.submit();            
+            this.submit();   
         },
 
         loadTagChosen: function() {
@@ -366,7 +366,7 @@
                     new_field.tagit({  
                         allowSpaces: true,
                         afterTagAdded: Dokan_Editor.tagIt.afterTagAdded,
-                        afterTagRemoved: Dokan_Editor.tagIt.afterTagRemoved,                            
+                        afterTagRemoved: Dokan_Editor.tagIt.afterTagRemoved,
                     });
                 } else {
 
@@ -439,7 +439,7 @@
                 $(input).focus();
                 console.log(input);
             },
-             
+
             createVariationSection: function() {
                 if ( $(this).is(':checked') ) {
                     $('.hide_if_variation').hide();

@@ -1,5 +1,4 @@
-
-v2.4.12 -> August 08, 2016
+﻿v2.4.12 -> August 08, 2016
 ---------------------
 - [new] Product base admin commission
 - [new] Sellers coupon show on store

@@ -103,7 +103,7 @@ function dokan_count_orders( $user_id ) {
     $counts = wp_cache_get( $cache_key, 'dokan' );
 
     if ( $counts === false ) {
-        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
+        $counts = array('wc-pending' => 0, 'wc-completed' => 0, 'wc-on-hold' => 0,'wc-v-doroge' => 0, 'wc-processing' => 0, 'wc-refunded' => 0, 'wc-cancelled' => 0, 'total' => 0);
 
         $sql = "SELECT do.order_status
                 FROM {$wpdb->prefix}dokan_orders AS do
@@ -317,6 +317,7 @@ function dokan_get_seller_id_by_order( $order_id ) {
     } else if ( count( $sellers ) == 1 ) {
         return (int) reset( $sellers )->seller_id;
     }
+
     return 0;
 }
 
@@ -344,6 +345,11 @@ function dokan_get_order_status_class( $status ) {
             return 'warning';
             break;
 
+        case 'v-doroge':
+        case '':
+            return 'info';
+            break;
+
         case 'processing':
         case 'wc-processing':
             return 'info';
@@ -365,7 +371,6 @@ function dokan_get_order_status_class( $status ) {
             break;
     }
 }
-
 
 /**
  * Get translated string of order status
@@ -390,6 +395,11 @@ function dokan_get_order_status_translated( $status ) {
             return __( 'On-hold', 'dokan' );
             break;
 
+        case 'v-doroge':
+        case 'wc-v-doroge':
+            return __( 'В дороге', 'dokan' );
+            break;
+
         case 'processing':
         case 'wc-processing':
             return __( 'Processing', 'dokan' );
@@ -411,7 +421,6 @@ function dokan_get_order_status_translated( $status ) {
             break;
     }
 }
-
 
 /**
  * Get product items list from order
@@ -520,7 +529,6 @@ function dokan_sync_refund_order( $order_id, $refund_id ) {
 }
 add_action( 'woocommerce_order_refunded', 'dokan_sync_refund_order', 10, 2 );
 
-
 /**
  * Insert a order in sync table once a refund is deleted
  *
@@ -533,7 +541,6 @@ function dokan_delete_refund_order( $refund_id, $order_id ) {
     delete_post_meta( $order_id, 'dokan_refund_processing_id' );
 }
 add_action( 'woocommerce_refund_deleted', 'dokan_delete_refund_order', 10, 2 );
-
 
 /**
  * Get if an order is a sub order or not
@@ -553,7 +560,6 @@ function dokan_is_sub_order( $order_id ) {
     }
     
 }
-
 
 /**
  * Get toal number of orders in Dokan order table

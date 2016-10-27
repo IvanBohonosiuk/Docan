@@ -52,6 +52,7 @@ class Dokan_Pro_Ajax {
         add_action( 'wp_ajax_nopriv_dokan_remove_single_variation_item', array( $this, 'remove_single_variation_item') );
         add_action( 'wp_ajax_dokan_get_pre_attribute', array( $this, 'add_predefined_attribute') );
         add_action( 'wp_ajax_nopriv_dokan_get_pre_attribute', array( $this, 'add_predefined_attribute') );
+
         add_action( 'wp_ajax_dokan_load_order_items', array( $this, 'load_order_items') );
         add_action( 'wp_ajax_nopriv_dokan_load_order_items', array( $this, 'load_order_items') );
 
@@ -1081,7 +1082,7 @@ class Dokan_Pro_Ajax {
 
             if ( ! $attribute['is_variation'] ) continue;
 
-            $attribute_field_name = 'attribute_' . $attribute['name'] ;
+            $attribute_field_name = 'attribute_' . $attribute['name'];
 
             if ( $attribute['is_taxonomy'] ) {
                 $post_terms = wp_get_post_terms( $post_id, $attribute['name'] );

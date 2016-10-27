@@ -66,7 +66,9 @@ $order    = new WC_Order( $order_id );
                                             do_action( 'woocommerce_order_item_' . $item['type'] . '_html', $item_id, $item );
 
                                         }
-                                    ?>
+
+                                        
+                                        ?>
                                 </tbody>
 
                                 <tfoot>

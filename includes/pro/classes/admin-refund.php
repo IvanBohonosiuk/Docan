@@ -1,5 +1,4 @@
 <?php
-
 /**
 *  Dokan Pro Admin refund class
 *
@@ -13,7 +12,6 @@
 *  @package dokan
 */
 class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
-
     /**
      * Initializes the Dokan_Admin_Refund class
      *
@@ -22,14 +20,11 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
      */
     public static function init() {
         static $instance = false;
-
         if ( ! $instance ) {
             $instance = new Dokan_Pro_Admin_Refund();
         }
-
         return $instance;
     }
-
     /**
      * Bulk action handler
      *
@@ -39,82 +34,55 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
             return;
         }
-
         if ( ! isset( $_POST['dokan_refund_bulk'] ) ) {
             return;
         }
-
         $bulk_action = $_POST['dokan_refund_bulk'];
-
         if ( ! isset( $_POST['id'] )  ) {
             return;
         }
-
         //if id empty then empty value return
         if ( ! is_array( $_POST['id'] ) && ! count( $_POST['id'] ) ) {
             return;
         }
-
         $refund_ids = implode( "','", $_POST['id'] );
         $status = $_POST['status_page'];
-
         switch ( $bulk_action ) {
-
         case 'delete':
-
             foreach ( $_POST['id'] as $refund_id ) {
                 $this->delete_refund( $refund_id );
             }
-
             wp_redirect( admin_url( 'admin.php?page=dokan-refund&message=trashed&status=' . $status ) );
             die();
-
             break;
-
         case 'cancel':
-
             foreach ( $_POST['id'] as $key => $refund_id ) {
                 $order_id = $_POST['order_id'][$key];
                 $refund_amount  = $_POST['refund_amount'][$key];
-
                 // Dokan_Email::init()->refund_request_cancel( $user_id, $refund_amount, $method, $note );
                 $this->update_status( $refund_id, $order_id, 2 );
             }
-
             wp_redirect( admin_url( 'admin.php?page=dokan-refund&message=cancelled&status=' . $status ) );
             die();
-
             break;
-
         case 'approve':
-
             foreach ( $_POST['id'] as $key => $refund_id ) {
                 $order_id = $_POST['order_id'][$key];
                 $refund_amount  = $_POST['refund_amount'][$key];
                 $method  = $_POST['method'][$key];
-
                 // Dokan_Email::init()->refund_request_approve( $order_id, $refund_amount, $method );
                 $this->update_status( $refund_id, $order_id, 1 );
             }
-
             wp_redirect( admin_url( 'admin.php?page=dokan-refund&message=approved&status=' . $status ) );
-
             break;
-
         case 'pending':
-
             foreach ( $_POST['id'] as $key => $refund_id ) {
                 $this->update_status( $refund_id, $_POST['user_id'][$key], 0 );
             }
-
             wp_redirect( admin_url( 'admin.php?page=dokan-refund&message=pending&status=' . $status ) );
-
             break;
         }
-
-
     }
-
     /**
      * Refund listing for admin
      *
@@ -131,21 +99,17 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
 
         <?php if ( isset( $_GET['message'] ) ) {
             $message = '';
-
             switch ( $_GET['message'] ) {
             case 'trashed':
                 $message = __( 'Request Deleted!', 'dokan' );
                 break;
-
             case 'cancelled':
                 $message = __( 'Request Cancelled!', 'dokan' );
                 break;
-
             case 'approved':
                 $message = __( 'Request Approved!', 'dokan' );
                 break;
             }
-
             if ( ! empty( $message ) ) {
                 ?>
                 <div class="updated">
@@ -211,7 +175,6 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
                         <strong><a href="<?php echo admin_url( 'post.php?post=' . $row->order_id . '&action=edit' ); ?>"><?php echo '#' . $row->order_id; ?></a></strong>
                         <div class="row-actions">
                             <?php if ( $status == 'pending' ) {
-
                                 if ( $gateway_supports_refunds ) { ?>
                                     <span class="edit"><a href="#" class="dokan-refund-action do-api-refund" data-status="approve" data-refund_id = "<?php echo $row->id; ?>"><?php printf( _x( 'Refund via %s', 'Refund', 'dokan' ), $gateway_name ); ?></a> | </span>
                                 <?php } ?>
@@ -246,7 +209,6 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
                 <?php
                 $count++;
             }
-
         } else {
             ?>
                 <tr>
@@ -303,7 +265,6 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
                         'total'     => $num_of_pages,
                         'current'   => $pagenum
                     ) );
-
                     if ( $page_links ) {
                         echo '<div class="tablenav-pages">' . $page_links . '</div>';
                     }
@@ -316,11 +277,9 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
             .refund-table {
                 margin-top: 10px;
             }
-
             .refund-table td, .refund-table th {
                 vertical-align: top;
             }
-
             .custom-spinner {
                 background: url('images/spinner-2x.gif') no-repeat;
                 background-position: 43% 9px;
@@ -335,11 +294,9 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
             (function($){
                 $(document).ready(function(){
                     var url = "<?php echo $ajax_url; ?>";
-
                     $('#dokan-admin-refund-action').on('click', 'a.dokan-refund-action', function(e) {
                         e.preventDefault();
                         var self = $(this);
-
                         self.closest( 'tr' ).addClass('custom-spinner');
                         data = {
                             action: 'dokan_refund_form_action',
@@ -347,9 +304,7 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
                             status: self.data('status') ,
                             refund_id : self.data( 'refund_id' )
                         }
-
                         $.post(url, data, function( resp ) {
-
                             if( resp.success ) {
                                 if ( self.data('status') == 'approve' ) {
                                     rdata = resp.data.data;
@@ -377,12 +332,10 @@ class Dokan_Pro_Admin_Refund extends Dokan_Pro_Refund {
                                 alert( 'Something wrong' );
                             }
                         });
-
                     });
                 });
             })(jQuery)
         </script>
         <?php
     }
-
 }

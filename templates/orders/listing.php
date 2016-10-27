@@ -70,7 +70,7 @@ if ( $user_orders ) {
                             $t_time = $h_time = __( 'Unpublished', 'dokan' );
                         } else {
                             $t_time = get_the_time( __( 'Y/m/d g:i:s A', 'dokan' ), $the_order->id );
-                            
+
                             $gmt_time = strtotime( $the_order->order_date . ' UTC' );
                             $time_diff = current_time( 'timestamp', 1 ) - $gmt_time;
 
@@ -91,7 +91,16 @@ if ( $user_orders ) {
 
                         if ( dokan_get_option( 'order_status_change', 'dokan_selling', 'on' ) == 'on' ) {
 
-                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold') ) )
+                            if ( in_array( $the_order->post_status, array( 'wc-processing', 'wc-on-hold', 'wc-pending' ) ) ) {
+                                 $actions['v-doroge'] = array(
+                                    'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-v-doroge&order_id=' . $the_order->id ), 'dokan-mark-order-v-doroge' ),
+                                    'name' => __( 'В дороге', 'dokan' ),
+                                    'action' => "v-doroge",
+                                    'icon' => '<i class="fa fa-truck">&nbsp;</i>'
+                                );
+                            }
+
+                            if ( in_array( $the_order->post_status, array( 'wc-pending', 'wc-on-hold' ) ) )
                                 $actions['processing'] = array(
                                     'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-processing&order_id=' . $the_order->id ), 'dokan-mark-order-processing' ),
                                     'name' => __( 'Processing', 'dokan' ),
@@ -99,7 +108,7 @@ if ( $user_orders ) {
                                     'icon' => '<i class="fa fa-clock-o">&nbsp;</i>'
                                 );
 
-                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold', 'wc-processing') ) )
+                            if ( in_array( $the_order->post_status, array('wc-pending', 'wc-on-hold', 'wc-v-doroge', 'wc-processing' ) ) )
                                 $actions['complete'] = array(
                                     'url' => wp_nonce_url( admin_url( 'admin-ajax.php?action=dokan-mark-order-complete&order_id=' . $the_order->id ), 'dokan-mark-order-complete' ),
                                     'name' => __( 'Complete', 'dokan' ),
@@ -107,7 +116,9 @@ if ( $user_orders ) {
                                     'icon' => '<i class="fa fa-check">&nbsp;</i>'
                                 );
 
-                        }
+                        } 
+
+
 
                         $actions['view'] = array(
                             'url' => wp_nonce_url( add_query_arg( array( 'order_id' => $the_order->id ), dokan_get_navigation_url( 'orders' ) ), 'dokan_view_order' ),

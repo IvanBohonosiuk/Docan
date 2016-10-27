@@ -76,7 +76,7 @@ class Dokan_Pro_Store_Seo {
             add_action( 'wp_head', array( $this, 'print_social_tags' ), 1 );
         } elseif ( class_exists( 'WPSEO_Frontend' ) ) {
             
-           //For WP > 4.4
+            //For WP > 4.4
             add_filter( 'wpseo_title', array( $this, 'replace_title' ), 100 );
             //For WP < 4.4
             add_filter( 'wp_title', array( $this, 'replace_title' ), 100 );
@@ -100,8 +100,8 @@ class Dokan_Pro_Store_Seo {
             add_action( 'wp_head', array( $this, 'print_social_tags' ), 1 );
         }
     }
-    
-   /**
+
+    /**
     * Register dokan_sellers sitemap on yoast SEO
     */
     function register_sitemap() {
@@ -159,7 +159,7 @@ class Dokan_Pro_Store_Seo {
         $sitemap = ob_get_clean();
         $wpseo_sitemaps->set_sitemap( $sitemap );
     }
-    
+
     /**
      * prints out default meta tags from user meta
      *
